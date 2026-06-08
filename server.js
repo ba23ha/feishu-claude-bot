@@ -4,6 +4,12 @@ const { execFile } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+// ─── Boss Copilot ─────────────────────────────────────────────────────────────
+const { isBoss } = require('./src/bot/permissions');
+const { detectTaskType } = require('./src/bot/router');
+const { handleTask, handleClarification } = require('./src/bot/handler');
+const { distill, parseDistillCommand } = require('./src/soul/updater');
+
 // ─── Skill 数据源配置（严格执行，所有 skill 基于此用户数据生成）────────────────
 const SKILL_DATA_SOURCE = {
   openId: process.env.SKILL_DATA_SOURCE_OPENID,
@@ -352,6 +358,44 @@ const dispatcher = new EventDispatcher({}).register({
 
     const openId = senderOpenId;
     console.log(`[${new Date().toISOString()}] ${openId}: ${userText}`);
+
+    // ── Boss Copilot routing (must come before existing routing) ──────────────
+    if (isBoss(openId)) {
+      const taskType = detectTaskType(userText);
+      try {
+        await sendMessage(chatId, '⏳ 处理中...');
+
+        if (taskType === 'distill') {
+          const opts = parseDistillCommand(userText);
+          if (!opts.targetFile) {
+            await sendMessage(chatId,
+              '请指定要更新的 soul 文件，例如：\n'
+              + '/distill --file=decision --chat=oc_xxx --days=90 --keyword=方案评审 --reason=提炼决策标准'
+            );
+          } else {
+            const result = await distill(opts);
+            await sendMessage(chatId, result);
+          }
+          return;
+        }
+
+        if (taskType === 'general' && userText.length < 10) {
+          await sendMessage(chatId, handleClarification());
+          return;
+        }
+
+        const response = await handleTask(taskType, userText);
+        // Split long responses (Feishu limit ~4000 chars)
+        for (let i = 0; i < response.length; i += 3800) {
+          await sendMessage(chatId, response.slice(i, i + 3800));
+        }
+      } catch (err) {
+        console.error('[boss-copilot]', err.message);
+        await sendMessage(chatId, `⚠️ 出错了：${err.message}`);
+      }
+      return;
+    }
+    // ── end Boss Copilot routing ──────────────────────────────────────────────
 
     if (userText.startsWith('/create-skill')) {
       await handleCreateSkill(openId, chatId, userText.slice('/create-skill'.length).trim());
