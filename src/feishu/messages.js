@@ -1,4 +1,5 @@
 const { getFeishuClient } = require('./client');
+const { getValidToken, hasValidAuth } = require('./oauth');
 
 /**
  * Read messages from a chat within a time range, optionally filtered by keyword.
@@ -15,6 +16,10 @@ async function readMessages({ chatId, startMs, endMs, keyword, maxCount = 200 })
   if (!startMs || !endMs) throw new Error('startMs and endMs are required');
 
   const client = getFeishuClient();
+  // Use boss's user token when available — allows reading groups without bot membership
+  const callOpts = hasValidAuth() ? { userAccessToken: await getValidToken() } : undefined;
+  if (callOpts) console.log('[messages] using boss user token');
+
   const collected = [];
   let pageToken;
 
@@ -27,7 +32,7 @@ async function readMessages({ chatId, startMs, endMs, keyword, maxCount = 200 })
     };
     if (pageToken) params.page_token = pageToken;
 
-    const res = await client.im.message.list({ params });
+    const res = await client.im.message.list({ params }, callOpts);
     if (res.code !== 0) throw new Error(`Feishu API error ${res.code}: ${res.msg}`);
 
     const items = res.data?.items || [];

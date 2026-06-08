@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { getFeishuClient } = require('../feishu/client');
+const { getValidToken, hasValidAuth } = require('../feishu/oauth');
 const { resolveUsers } = require('../feishu/resolver');
 const { generateRunId } = require('./runner');
 
@@ -9,6 +10,7 @@ const { generateRunId } = require('./runner');
  */
 async function scanMessageSenders({ chatId, startMs, endMs, maxCount = 200 }) {
   const client = getFeishuClient();
+  const callOpts = hasValidAuth() ? { userAccessToken: await getValidToken() } : undefined;
   const senderCounts = {};
   let total = 0;
   let pageToken;
@@ -22,7 +24,7 @@ async function scanMessageSenders({ chatId, startMs, endMs, maxCount = 200 }) {
     };
     if (pageToken) params.page_token = pageToken;
 
-    const res = await client.im.message.list({ params });
+    const res = await client.im.message.list({ params }, callOpts);
     if (res.code !== 0) throw new Error(`Feishu API error ${res.code}: ${res.msg}`);
 
     const items = res.data?.items || [];

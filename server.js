@@ -381,73 +381,66 @@ const dispatcher = new EventDispatcher({}).register({
     const openId = senderOpenId;
     console.log(`[${new Date().toISOString()}] ${openId}: ${userText}`);
 
-    // ── Boss Copilot routing (must come before existing routing) ──────────────
-    if (isBoss(openId)) {
-      try {
-        // ── Phase 1: check if boss is confirming/cancelling a pending distill ──
-        if (pendingDistills.has(chatId)) {
-          const pending = pendingDistills.get(chatId);
-
-          if (Date.now() > pending.expiresAt) {
-            pendingDistills.delete(chatId);
-            await sendMessage(chatId, '⏰ 确认超时，蒸馏操作已取消。请重新发送指令。');
-            // fall through to normal routing for the new message
-          } else if (/^确认$|^confirm$/i.test(userText.trim())) {
-            pendingDistills.delete(chatId);
-            await executeDryRunConfirmed(pending, chatId, openId);
-            return;
-          } else if (/^取消$|^cancel$/i.test(userText.trim())) {
-            pendingDistills.delete(chatId);
-            await sendMessage(chatId, '✅ 已取消，未读取任何数据。');
-            return;
-          } else {
-            // New command — clear the stale pending
-            pendingDistills.delete(chatId);
-          }
+    // ── Boss Copilot routing ──────────────────────────────────────────────────
+    try {
+      // ── Boss-only: check pending distill confirmation ─────────────────────
+      if (isBoss(openId) && pendingDistills.has(chatId)) {
+        const pending = pendingDistills.get(chatId);
+        if (Date.now() > pending.expiresAt) {
+          pendingDistills.delete(chatId);
+          await sendMessage(chatId, '⏰ 确认超时，蒸馏操作已取消。请重新发送指令。');
+        } else if (/^确认$|^confirm$/i.test(userText.trim())) {
+          pendingDistills.delete(chatId);
+          await executeDryRunConfirmed(pending, chatId, openId);
+          return;
+        } else if (/^取消$|^cancel$/i.test(userText.trim())) {
+          pendingDistills.delete(chatId);
+          await sendMessage(chatId, '✅ 已取消，未读取任何数据。');
+          return;
+        } else {
+          pendingDistills.delete(chatId);
         }
+      }
 
-        // ── Phase 2: normal task routing ─────────────────────────────────────
-        const taskType = detectTaskType(userText);
+      // ── Task routing (all users) ──────────────────────────────────────────
+      const taskType = detectTaskType(userText);
 
-        if (taskType === 'distill') {
-          const opts = parseDistillCommand(userText);
-          if (!opts.targetFile) {
-            await sendMessage(chatId,
-              '请指定要更新的 soul 文件，例如：\n'
-              + '/distill --file=decision --chat=oc_xxx --days=90 --keyword=方案评审 --reason=提炼决策标准'
-            );
-            return;
-          }
-          await sendMessage(chatId, '⏳ 正在生成访问清单...');
-          const preview = await dryRun(opts);
-          pendingDistills.set(chatId, {
-            opts,
-            preview,
-            expiresAt: Date.now() + PENDING_TTL_MS,
-          });
-          await sendMessage(chatId, formatDryRunMessage(preview));
+      if (taskType === 'distill') {
+        if (!isBoss(openId)) {
+          await sendMessage(chatId, '⛔ 蒸馏功能仅 boss 本人可用。');
           return;
         }
+        const opts = parseDistillCommand(userText);
+        if (!opts.targetFile) {
+          await sendMessage(chatId,
+            '请指定要更新的 soul 文件，例如：\n'
+            + '/distill --file=decision --chat=oc_xxx --days=90 --keyword=方案评审 --reason=提炼决策标准'
+          );
+          return;
+        }
+        await sendMessage(chatId, '⏳ 正在生成访问清单...');
+        const preview = await dryRun(opts);
+        pendingDistills.set(chatId, { opts, preview, expiresAt: Date.now() + PENDING_TTL_MS });
+        await sendMessage(chatId, formatDryRunMessage(preview));
+        return;
+      }
 
+      if (taskType !== 'general') {
         await sendMessage(chatId, '⏳ 处理中...');
-
-        if (taskType === 'general' && userText.length < 10) {
-          await sendMessage(chatId, handleClarification());
-          return;
-        }
-
         const response = await handleTask(taskType, userText);
         for (let i = 0; i < response.length; i += 3800) {
           await sendMessage(chatId, response.slice(i, i + 3800));
         }
-      } catch (err) {
-        console.error('[boss-copilot]', err.message);
-        await sendMessage(chatId, `⚠️ 出错了：${err.message}`);
+        return;
       }
+    } catch (err) {
+      console.error('[boss-copilot]', err.message);
+      await sendMessage(chatId, `⚠️ 出错了：${err.message}`);
       return;
     }
     // ── end Boss Copilot routing ──────────────────────────────────────────────
 
+    // ── Fallback: general / existing commands ─────────────────────────────────
     if (userText.startsWith('/create-skill')) {
       await handleCreateSkill(openId, chatId, userText.slice('/create-skill'.length).trim());
     } else {
