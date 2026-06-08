@@ -121,7 +121,7 @@ async function fetchUserDocs(openId) {
 // ─── Skill Generator ──────────────────────────────────────────────────────────
 function runClaude(prompt, callback) {
   execFile(
-    '/Users/lth/.npm-global/bin/claude',
+    'claude',
     ['--dangerously-skip-permissions', '-p', prompt, '--output-format', 'text'],
     { timeout: 180_000, maxBuffer: 1024 * 1024 * 10 },
     callback
