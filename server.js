@@ -9,6 +9,13 @@ const { isBoss } = require('./src/bot/permissions');
 const { detectTaskType } = require('./src/bot/router');
 const { handleTask, handleClarification } = require('./src/bot/handler');
 const { distill, parseDistillCommand } = require('./src/soul/updater');
+const { dryRun, formatDryRunMessage } = require('./src/audit/dry-run');
+const { createAuditContext } = require('./src/audit/runner');
+const { generateReport } = require('./src/audit/report');
+
+// pending distill state: chatId → { opts, preview, expiresAt }
+const pendingDistills = new Map();
+const PENDING_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // ─── Skill 数据源配置（严格执行，所有 skill 基于此用户数据生成）────────────────
 const SKILL_DATA_SOURCE = {
@@ -309,6 +316,21 @@ async function handleRegularMessage(openId, chatId, userText) {
   });
 }
 
+// ─── Boss Copilot: execute confirmed distill with full audit trail ────────────
+async function executeDryRunConfirmed({ opts, preview }, chatId, operator) {
+  try {
+    await sendMessage(chatId, '⏳ 已确认，正在读取数据并蒸馏...');
+    const auditContext = createAuditContext(opts, operator, preview.runId);
+    const summary = await distill(opts, auditContext);
+    const reportPath = generateReport(auditContext);
+    const reportName = path.basename(reportPath);
+    await sendMessage(chatId, `${summary}\n\n📋 审计报告已保存：audit/${reportName}`);
+  } catch (err) {
+    console.error('[boss-copilot audit]', err.message);
+    await sendMessage(chatId, `⚠️ 蒸馏失败：${err.message}`);
+  }
+}
+
 // ─── Send Message ─────────────────────────────────────────────────────────────
 async function sendMessage(chatId, text) {
   try {
@@ -361,9 +383,31 @@ const dispatcher = new EventDispatcher({}).register({
 
     // ── Boss Copilot routing (must come before existing routing) ──────────────
     if (isBoss(openId)) {
-      const taskType = detectTaskType(userText);
       try {
-        await sendMessage(chatId, '⏳ 处理中...');
+        // ── Phase 1: check if boss is confirming/cancelling a pending distill ──
+        if (pendingDistills.has(chatId)) {
+          const pending = pendingDistills.get(chatId);
+
+          if (Date.now() > pending.expiresAt) {
+            pendingDistills.delete(chatId);
+            await sendMessage(chatId, '⏰ 确认超时，蒸馏操作已取消。请重新发送指令。');
+            // fall through to normal routing for the new message
+          } else if (/^确认$|^confirm$/i.test(userText.trim())) {
+            pendingDistills.delete(chatId);
+            await executeDryRunConfirmed(pending, chatId, openId);
+            return;
+          } else if (/^取消$|^cancel$/i.test(userText.trim())) {
+            pendingDistills.delete(chatId);
+            await sendMessage(chatId, '✅ 已取消，未读取任何数据。');
+            return;
+          } else {
+            // New command — clear the stale pending
+            pendingDistills.delete(chatId);
+          }
+        }
+
+        // ── Phase 2: normal task routing ─────────────────────────────────────
+        const taskType = detectTaskType(userText);
 
         if (taskType === 'distill') {
           const opts = parseDistillCommand(userText);
@@ -372,12 +416,20 @@ const dispatcher = new EventDispatcher({}).register({
               '请指定要更新的 soul 文件，例如：\n'
               + '/distill --file=decision --chat=oc_xxx --days=90 --keyword=方案评审 --reason=提炼决策标准'
             );
-          } else {
-            const result = await distill(opts);
-            await sendMessage(chatId, result);
+            return;
           }
+          await sendMessage(chatId, '⏳ 正在生成访问清单...');
+          const preview = await dryRun(opts);
+          pendingDistills.set(chatId, {
+            opts,
+            preview,
+            expiresAt: Date.now() + PENDING_TTL_MS,
+          });
+          await sendMessage(chatId, formatDryRunMessage(preview));
           return;
         }
+
+        await sendMessage(chatId, '⏳ 处理中...');
 
         if (taskType === 'general' && userText.length < 10) {
           await sendMessage(chatId, handleClarification());
@@ -385,7 +437,6 @@ const dispatcher = new EventDispatcher({}).register({
         }
 
         const response = await handleTask(taskType, userText);
-        // Split long responses (Feishu limit ~4000 chars)
         for (let i = 0; i < response.length; i += 3800) {
           await sendMessage(chatId, response.slice(i, i + 3800));
         }

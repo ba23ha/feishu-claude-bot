@@ -1,71 +1,131 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { readMessages } = require('../feishu/messages');
 const { readDoc } = require('../feishu/docs');
 const { readMinutes } = require('../feishu/minutes');
+const { resolveUsers } = require('../feishu/resolver');
 const { generate } = require('../llm/client');
 const { appendChangelog } = require('./changelog');
+const { recordSourceAccess, recordSoulUpdate } = require('../audit/runner');
 
 const SOUL_DIR = path.join(__dirname, '..', '..', 'boss-soul');
 
+function hashContent(text) {
+  return 'sha256:' + crypto.createHash('sha256').update(text || '').digest('hex').slice(0, 16);
+}
+
 /**
- * Run a distillation task:
- * 1. Fetch specified Feishu data
- * 2. Ask LLM to extract relevant soul insights
- * 3. Update the target boss-soul file (APPEND, not replace)
- * 4. Log to changelog
- * 5. Return summary of what was added
+ * Run a distillation task with full audit trail.
+ *
+ * Flow:
+ *  1. Fetch specified Feishu data — record every source in auditContext
+ *  2. Ask LLM to extract relevant soul insights
+ *  3. Append insights to boss-soul file (never replace, raw data discarded)
+ *  4. Record soul update in auditContext
+ *  5. Write changelog entry with run_id
+ *  6. Return summary string
  *
  * @param {object} opts
- * @param {string}   opts.targetFile    Which boss-soul file to update (e.g. 'decision')
- * @param {string}   opts.reason        Why we're distilling (logged in changelog)
- * @param {string}   [opts.chatId]      Feishu group ID to read messages from
- * @param {number}   [opts.startMs]     Start of time range (ms)
- * @param {number}   [opts.endMs]       End of time range (ms, defaults to now)
- * @param {string}   [opts.keyword]     Keyword filter for messages
- * @param {string}   [opts.docToken]    Doc token to read
+ * @param {string}   opts.targetFile     Which boss-soul file to update (e.g. 'decision')
+ * @param {string}   opts.reason         Why we're distilling (logged in changelog)
+ * @param {string}   [opts.chatId]       Feishu group ID to read messages from
+ * @param {number}   [opts.startMs]      Start of time range (ms)
+ * @param {number}   [opts.endMs]        End of time range (ms, defaults to now)
+ * @param {string}   [opts.keyword]      Keyword filter for messages
+ * @param {string}   [opts.docToken]     Doc token to read
  * @param {string}   [opts.minutesToken] Minutes token to read
  * @param {string}   [opts.extraContext] Additional context to pass to LLM
+ * @param {object}   auditContext        Required — from createAuditContext()
  * @returns {Promise<string>}  Summary of the update
  */
-async function distill(opts) {
+async function distill(opts, auditContext) {
+  if (!auditContext) throw new Error('auditContext is required — call createAuditContext() first');
+
   const { targetFile, reason, chatId, startMs, endMs = Date.now(), keyword, docToken, minutesToken, extraContext } = opts;
+  const bossOpenId = process.env.BOSS_OPEN_ID;
 
   const validFiles = ['identity', 'style', 'decision', 'communication', 'taboos', 'examples'];
   if (!validFiles.includes(targetFile)) throw new Error(`Invalid targetFile: ${targetFile}`);
 
-  // 1. Collect raw material
   const rawParts = [];
+  const allSourceIds = [];
 
+  // ── 1. Fetch messages ────────────────────────────────────────────────────────
   if (chatId && startMs) {
     const msgs = await readMessages({ chatId, startMs, endMs, keyword, maxCount: 150 });
+
+    // Resolve sender names for audit trail
+    const senderIds = [...new Set(msgs.map(m => m.sender).filter(Boolean))];
+    const names = await resolveUsers(senderIds);
+
     if (msgs.length === 0) {
       rawParts.push('（指定群聊在该时间范围内无匹配消息）');
     } else {
       rawParts.push(`## 群聊消息（${msgs.length} 条）\n\n`
         + msgs.map(m => `[${m.timestamp}] ${m.text}`).join('\n'));
     }
+
+    for (const msg of msgs) {
+      const sourceId = `msg_${msg.timestamp.replace(/[-:.TZ]/g, '').slice(0, 14)}_${(msg.sender || 'unk').slice(-6)}`;
+      allSourceIds.push(sourceId);
+      recordSourceAccess(auditContext, {
+        sourceId,
+        type: 'message',
+        chatId,
+        senderId: msg.sender,
+        senderName: names[msg.sender] || null,
+        createTime: msg.timestamp,
+        isFromBoss: msg.sender === bossOpenId,
+        contentHash: hashContent(msg.text),
+        // Desensitised excerpt: trim to 50 chars, no raw PII
+        summary: msg.text.slice(0, 50).replace(/\d{11}/g, '***').replace(/[一-龥]{2,4}\d+/g, '***'),
+        isDistilled: true,
+      });
+    }
   }
 
+  // ── 2. Fetch document ────────────────────────────────────────────────────────
   if (docToken) {
     const docContent = await readDoc(docToken);
     rawParts.push(`## 文档内容\n\n${docContent}`);
+    const sourceId = `doc_${docToken.slice(-8)}`;
+    allSourceIds.push(sourceId);
+    recordSourceAccess(auditContext, {
+      sourceId,
+      type: 'document',
+      contentHash: hashContent(docContent),
+      summary: docContent.slice(0, 50),
+      isDistilled: true,
+    });
   }
 
+  // ── 3. Fetch meeting minutes ─────────────────────────────────────────────────
   if (minutesToken) {
     const minutesContent = await readMinutes(minutesToken);
     rawParts.push(`## 会议纪要\n\n${minutesContent}`);
+    const sourceId = `min_${minutesToken.slice(-8)}`;
+    allSourceIds.push(sourceId);
+    recordSourceAccess(auditContext, {
+      sourceId,
+      type: 'minutes',
+      contentHash: hashContent(minutesContent),
+      summary: minutesContent.slice(0, 50),
+      isDistilled: true,
+    });
   }
 
   if (extraContext) rawParts.push(`## 额外背景\n\n${extraContext}`);
 
-  if (rawParts.length === 0) throw new Error('No data source specified. Provide chatId+startMs, docToken, or minutesToken.');
+  if (rawParts.length === 0) {
+    throw new Error('No data source specified. Provide chatId+startMs, docToken, or minutesToken.');
+  }
 
-  // 2. Read existing soul file
+  // ── 4. Read existing soul file ───────────────────────────────────────────────
   const soulFilePath = path.join(SOUL_DIR, `${targetFile}.md`);
   const existingContent = fs.existsSync(soulFilePath) ? fs.readFileSync(soulFilePath, 'utf8') : '';
 
-  // 3. Ask LLM to extract insights (raw data is not persisted — only extracted insights are saved)
+  // ── 5. LLM extraction (raw data is NOT persisted — only insights are saved) ──
   const systemPrompt = `你是一个帮助提炼老板风格和决策原则的助手。
 你的任务是分析提供的飞书历史数据，提炼出与"${targetFile}"相关的具体洞察。
 
@@ -93,27 +153,31 @@ ${existingContent || '（文件为空）'}
 
   const distilledContent = await generate(systemPrompt, userMessage, { maxTokens: 1500 });
 
-  // 4. Append to soul file (never replace — only add; raw data discarded)
+  // ── 6. Append to soul file (never replace; raw data already discarded above) ─
   const timestamp = new Date().toISOString();
-  const appendBlock = `\n\n---\n\n<!-- 蒸馏更新 ${timestamp} | 原因：${reason} -->\n\n${distilledContent}`;
+  const appendBlock = `\n\n---\n\n<!-- 蒸馏更新 ${timestamp} | run_id: ${auditContext.runId} | 原因：${reason} -->\n\n${distilledContent}`;
   fs.writeFileSync(soulFilePath, existingContent + appendBlock);
 
-  // 5. Update changelog
+  // ── 7. Record soul update in audit context ────────────────────────────────────
+  recordSoulUpdate(auditContext, `boss-soul/${targetFile}.md`, allSourceIds);
+
+  // ── 8. Changelog ─────────────────────────────────────────────────────────────
   appendChangelog({
     file: `boss-soul/${targetFile}.md`,
     reason,
     summary: distilledContent.slice(0, 100).replace(/\n/g, ' ') + '...',
-    operator: 'distill-command',
+    operator: auditContext.operator,
+    runId: auditContext.runId,
   });
 
   return `✅ 蒸馏完成，已更新 boss-soul/${targetFile}.md\n\n原因：${reason}\n\n提炼内容预览：\n${distilledContent.slice(0, 400)}${distilledContent.length > 400 ? '\n...' : ''}`;
 }
 
 /**
- * Parse a distill command: /distill --file=decision --chat=xxx --days=90 --keyword=方案评审 --reason=xxx
+ * Parse a distill command: /distill --file=decision --chat=xxx --days=90 --keyword=xxx --reason=xxx
  */
 function parseDistillCommand(text) {
-  const opts = {};
+  const opts = { _command: text };
 
   const fileMatch = text.match(/--file[=\s]+(\w+)/);
   if (fileMatch) opts.targetFile = fileMatch[1];
@@ -125,6 +189,7 @@ function parseDistillCommand(text) {
   if (daysMatch) {
     const days = parseInt(daysMatch[1], 10);
     opts.startMs = Date.now() - days * 24 * 60 * 60 * 1000;
+    opts.endMs = Date.now();
   }
 
   const keywordMatch = text.match(/--keyword[=\s]+"?([^"]+)"?/);
