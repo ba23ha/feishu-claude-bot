@@ -1,30 +1,42 @@
 require('dotenv').config();
-const { getFeishuClient } = require('../feishu/client');
+const https = require('https');
 const { getValidToken, hasValidAuth } = require('../feishu/oauth');
 const { resolveUsers } = require('../feishu/resolver');
 const { generateRunId } = require('./runner');
+
+function httpsGet(path, token) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'open.feishu.cn',
+      path,
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    }, res => {
+      let data = '';
+      res.on('data', d => { data += d; });
+      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
 /**
  * Scan message metadata (sender_id + timestamp only — no body content).
  * Used by dry-run to enumerate who is in scope without reading content.
  */
 async function scanMessageSenders({ chatId, startMs, endMs, maxCount = 200 }) {
-  const client = getFeishuClient();
-  const callOpts = hasValidAuth() ? { userAccessToken: await getValidToken() } : undefined;
+  if (!hasValidAuth()) throw new Error('No valid user token. Run: node cli-boss.js auth-url');
+  const token = await getValidToken();
   const senderCounts = {};
   let total = 0;
   let pageToken;
 
   while (total < maxCount) {
-    const params = {
-      container_id_type: 'chat',
-      container_id: chatId,
-      page_size: 50,
-      sort_type: 'ByCreateTimeDesc',
-    };
-    if (pageToken) params.page_token = pageToken;
+    let qs = `container_id_type=chat&container_id=${chatId}&page_size=50&sort_type=ByCreateTimeDesc`;
+    if (pageToken) qs += `&page_token=${encodeURIComponent(pageToken)}`;
 
-    const res = await client.im.message.list({ params }, callOpts);
+    const res = await httpsGet(`/open-apis/im/v1/messages?${qs}`, token);
     if (res.code !== 0) throw new Error(`Feishu API error ${res.code}: ${res.msg}`);
 
     const items = res.data?.items || [];
@@ -36,7 +48,7 @@ async function scanMessageSenders({ chatId, startMs, endMs, maxCount = 200 }) {
       if (ts < startMs) { reachedOlder = true; break; }
       if (ts > endMs) continue;
 
-      const senderId = item.sender?.id?.open_id || 'unknown';
+      const senderId = item.sender?.id || 'unknown';
       senderCounts[senderId] = (senderCounts[senderId] || 0) + 1;
       total++;
       if (total >= maxCount) break;

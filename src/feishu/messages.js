@@ -69,7 +69,7 @@ async function readMessages({ chatId, startMs, endMs, keyword, maxCount = 200 })
       if (keyword && !text.includes(keyword)) continue;
 
       collected.push({
-        sender: item.sender?.id?.open_id || 'unknown',
+        sender: item.sender?.id || 'unknown',
         timestamp: new Date(ts).toISOString(),
         text: text.replace(/@\S+/g, '').trim(),
       });
