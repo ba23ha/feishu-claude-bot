@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { AUDIT_DIR } = require('./runner');
+const { REPORTS_DIR } = require('./runner');
 
 /**
  * Write machine-readable access log (JSONL) for the audit context.
@@ -11,7 +11,7 @@ const { AUDIT_DIR } = require('./runner');
 function writeAccessLog(context) {
   const date = new Date().toISOString().split('T')[0];
   const filename = `${date}-${context.runId}-access.jsonl`;
-  const filePath = path.join(AUDIT_DIR, filename);
+  const filePath = path.join(REPORTS_DIR, filename);
 
   const header = JSON.stringify({
     _type: 'audit_header',

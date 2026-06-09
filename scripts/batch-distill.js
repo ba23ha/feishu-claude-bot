@@ -25,7 +25,7 @@ const GROUPS = [
   { id: 'oc_8221448fd17cf01082e36516adbf9858', name: '01 x 九章 CDH沟通群' },
 ];
 
-const SOUL_FILES = ['identity', 'style', 'decision', 'communication'];
+const SOUL_FILES = ['management', 'style', 'decision', 'communication'];
 const DAYS = 90;
 
 async function run() {

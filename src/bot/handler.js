@@ -1,4 +1,4 @@
-const { buildSystemPrompt, loadPrompt } = require('../soul/loader');
+const { buildSystemPrompt, loadSkill, loadMemory } = require('../soul/loader');
 const { generate } = require('../llm/client');
 
 /**
@@ -15,12 +15,26 @@ async function handleTask(taskType, userInput) {
   }
 
   // Note: 'distill' is handled in server.js before calling handleTask — never reaches here
-  if (!['reply', 'polish', 'review', 'meeting'].includes(taskType)) {
+  if (!['reply', 'polish', 'review', 'meeting', 'delegation', 'followup'].includes(taskType)) {
     throw new Error(`Unknown task type: ${taskType}`);
   }
 
-  const taskPrompt = loadPrompt(taskType);
-  const combinedSystem = `${systemPrompt}\n\n---\n\n## 当前任务指令\n\n${taskPrompt}`;
+  const skillContent = loadSkill(taskType);
+
+  // Inject relevant memory for context-heavy tasks
+  let memoryContext = '';
+  if (['reply', 'review', 'delegation', 'followup'].includes(taskType)) {
+    const projects = loadMemory('projects');
+    const people = loadMemory('people-map');
+    const glossary = loadMemory('glossary');
+    const parts = [];
+    if (projects) parts.push(`### 项目信息\n${projects}`);
+    if (people) parts.push(`### 人员信息\n${people}`);
+    if (glossary) parts.push(`### 术语表\n${glossary}`);
+    if (parts.length > 0) memoryContext = `\n\n---\n\n## 背景记忆\n\n${parts.join('\n\n')}`;
+  }
+
+  const combinedSystem = `${systemPrompt}${memoryContext}\n\n---\n\n## 当前任务指令\n\n${skillContent}`;
   return generate(combinedSystem, userInput);
 }
 

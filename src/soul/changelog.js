@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CHANGELOG_PATH = path.join(__dirname, '..', '..', 'boss-soul', 'changelog.md');
+const CHANGELOG_PATH = path.join(__dirname, '..', '..', 'boss-bot', 'soul', 'changelog.md');
 
 const DEFAULT_HEADER = '# Skill 变更记录\n\n| 日期 | 操作 | 影响文件 | 原因 | run_id | 操作人 |\n|------|------|----------|------|--------|--------|\n';
 

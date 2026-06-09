@@ -9,7 +9,7 @@ const { generate } = require('../llm/client');
 const { appendChangelog } = require('./changelog');
 const { recordSourceAccess, recordSoulUpdate } = require('../audit/runner');
 
-const SOUL_DIR = path.join(__dirname, '..', '..', 'boss-soul');
+const SOUL_DIR = path.join(__dirname, '..', '..', 'boss-bot', 'soul');
 
 function hashContent(text) {
   return 'sha256:' + crypto.createHash('sha256').update(text || '').digest('hex').slice(0, 16);
@@ -45,7 +45,7 @@ async function distill(opts, auditContext) {
   const { targetFile, reason, chatId, startMs, endMs = Date.now(), keyword, docToken, minutesToken, extraContext } = opts;
   const bossOpenId = process.env.BOSS_OPEN_ID;
 
-  const validFiles = ['identity', 'style', 'decision', 'communication', 'taboos', 'examples'];
+  const validFiles = ['style', 'decision', 'management', 'communication', 'taboos'];
   if (!validFiles.includes(targetFile)) throw new Error(`Invalid targetFile: ${targetFile}`);
 
   const rawParts = [];

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { AUDIT_DIR } = require('./runner');
+const { REPORTS_DIR, SOURCE_MAP_PATH } = require('./runner');
 const { writeAccessLog } = require('./access-log');
 
 /**
@@ -12,7 +12,7 @@ const { writeAccessLog } = require('./access-log');
  */
 function generateReport(context) {
   const date = new Date().toISOString().split('T')[0];
-  const reportPath = path.join(AUDIT_DIR, `${date}-${context.runId}-report.md`);
+  const reportPath = path.join(REPORTS_DIR, `${date}-${context.runId}-report.md`);
 
   const msgSources = context.sources.filter(s => s.type === 'message');
   const docSources = context.sources.filter(s => s.type === 'document');
@@ -130,8 +130,22 @@ function generateReport(context) {
 
   fs.writeFileSync(reportPath, lines.join('\n'));
 
-  // Also write machine-readable access log
+  // Write machine-readable access log to reports/
   writeAccessLog(context);
+
+  // Append to aggregated source-map.jsonl
+  for (const update of context.soulUpdates) {
+    const entry = JSON.stringify({
+      run_id: context.runId,
+      source_ids: update.sourceIds,
+      source_type: context.opts?.chatId ? 'feishu_message' : 'document',
+      target_file: update.file,
+      sanitized_summary: update.reason,
+      operator: context.operator,
+      created_at: update.timestamp,
+    });
+    fs.appendFileSync(SOURCE_MAP_PATH, entry + '\n');
+  }
 
   return reportPath;
 }

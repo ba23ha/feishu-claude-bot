@@ -7,10 +7,20 @@ describe('detectTaskType', () => {
     expect(detectTaskType('帮我写一下回复')).toBe('reply');
   });
 
-  test('detects polish task', () => {
-    expect(detectTaskType('帮我润色一下')).toBe('polish');
-    expect(detectTaskType('优化一下这段话')).toBe('polish');
-    expect(detectTaskType('帮我改写这段文字')).toBe('polish');
+  test('detects polish as reply task (polish merged into reply)', () => {
+    expect(detectTaskType('帮我润色一下')).toBe('reply');
+    expect(detectTaskType('优化一下这段话')).toBe('reply');
+    expect(detectTaskType('帮我改写这段文字')).toBe('reply');
+  });
+
+  test('detects delegation task', () => {
+    expect(detectTaskType('帮我安排一下这件事')).toBe('delegation');
+    expect(detectTaskType('委派给张三')).toBe('delegation');
+  });
+
+  test('detects followup task', () => {
+    expect(detectTaskType('帮我催一下负责人')).toBe('followup');
+    expect(detectTaskType('追一下进度')).toBe('followup');
   });
 
   test('detects review task', () => {

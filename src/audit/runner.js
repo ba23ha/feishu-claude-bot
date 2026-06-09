@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const AUDIT_DIR = path.join(__dirname, '..', '..', 'audit');
+const AUDIT_DIR = path.join(__dirname, '..', '..', 'boss-bot', 'audit');
+const REPORTS_DIR = path.join(AUDIT_DIR, 'reports');
+const SOURCE_MAP_PATH = path.join(AUDIT_DIR, 'source-map.jsonl');
 
 function generateRunId() {
   const ts = Date.now();
@@ -16,7 +18,7 @@ function generateRunId() {
  * @param {string} [runId]      Pre-assigned run_id (e.g. from dry-run phase)
  */
 function createAuditContext(opts, operator, runId = null) {
-  fs.mkdirSync(AUDIT_DIR, { recursive: true });
+  fs.mkdirSync(REPORTS_DIR, { recursive: true });
   return {
     runId: runId || generateRunId(),
     operator: operator || 'unknown',
@@ -77,4 +79,4 @@ function recordSoulUpdate(context, file, sourceIds) {
   });
 }
 
-module.exports = { generateRunId, createAuditContext, recordSourceAccess, recordSoulUpdate, AUDIT_DIR };
+module.exports = { generateRunId, createAuditContext, recordSourceAccess, recordSoulUpdate, AUDIT_DIR, REPORTS_DIR, SOURCE_MAP_PATH };

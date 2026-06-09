@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const { generateReport } = require('../src/audit/report');
-const { createAuditContext, recordSourceAccess, recordSoulUpdate, AUDIT_DIR } = require('../src/audit/runner');
+const { createAuditContext, recordSourceAccess, recordSoulUpdate, REPORTS_DIR } = require('../src/audit/runner');
+const AUDIT_DIR = REPORTS_DIR;
 
 function makeContext(runId = 'dist_test_rpt_001') {
   const ctx = createAuditContext(
