@@ -69,11 +69,13 @@ function getAuthUrl() {
   const redirectUri = encodeURIComponent(
     process.env.FEISHU_REDIRECT_URI || 'http://localhost:3000/oauth/callback'
   );
-  // Scopes: list chats + read messages + resolve user names
+  // Scopes: list chats + read messages + resolve user names + wiki/doc read
   const scope = encodeURIComponent([
     'im:chat:readonly',
     'im:message:readonly',
     'contact:contact.base:readonly',
+    'wiki:wiki:readonly',
+    'drive:drive:readonly',
   ].join(' '));
   return `https://open.feishu.cn/open-apis/authen/v1/authorize`
     + `?app_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&state=boss-distill`;

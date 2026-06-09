@@ -9,20 +9,24 @@
 ## 管理方式假设
 
 - 偏好对事有明确任务。
-  - status: hypothesis
-  - evidence: 待补充
+  - status: supported
+  - evidence: run_20260609_doc_weekly_001/src_007, run_20260609_doc_weekly_001/src_008, run_20260609_doc_weekly_001/src_013
+  - note: 12-10 明确要求「下周计划要列明确完成的内容」并追问每个项目推进到什么程度；12-24 追问「有具体时间安排吗」，一致要求任务可落实。
 
 - 要求人、时间、结果三件事说清楚。
-  - status: hypothesis
-  - evidence: 待补充
+  - status: supported
+  - evidence: run_20260609_doc_weekly_001/src_001, run_20260609_doc_weekly_001/src_007, run_20260609_doc_weekly_001/src_010, run_20260609_doc_weekly_001/src_012
+  - note: 两个日期持续追问负责人（谁）、时间（何时完成）、结果（完成到什么程度），三要素缺一即追问。
 
 - 对延期和模糊表达反感。
-  - status: hypothesis
-  - evidence: 待补充
+  - status: supported
+  - evidence: run_20260609_doc_weekly_001/src_007, run_20260609_doc_weekly_001/src_015
+  - note: 12-10 纠正「下周计划要列明确完成内容」（对模糊计划的反感）；12-24 直言「没看懂」（对模糊表述的不满）；证据仅覆盖模糊表达，延期反感无直接证据。
 
 - 追进度时强调下一步负责任人。
-  - status: hypothesis
-  - evidence: 待补充
+  - status: supported
+  - evidence: run_20260609_doc_weekly_001/src_010, run_20260609_doc_weekly_001/src_019
+  - note: 12-10 追问「下一步由谁搭 Agent」；12-24 要求 VOC 进度有人统一管理，跨两个日期均在追进度时明确指向下一步责任人。
 
 - 复盘时关注原因、责任和改进动作。
   - status: hypothesis
@@ -51,3 +55,27 @@
 ## 核心关注点
 
 （待填写：老板在看方案、汇报时最看重的维度）
+
+
+---
+
+<!-- 新增条目 | run_id: run_20260609084719_batch3 -->
+
+- 表达判断时习惯用不确定语气（我猜、我估计），不直接断言。
+  - status: supported
+  - evidence: run_20260609084719_batch3/source_004, run_20260609084719_batch3/source_006
+  - note: 两条消息来自不同日期（2026-06-08、2026-05-07）和不同群组，均出现主动降低确定性的表达，构成跨场景规律。
+
+---
+
+<!-- 新增 | run_id: run_20260609_doc_weekly_001 -->
+
+- 在提问或追进度的同时，主动给出操作方向或决策建议，而不仅是提问。
+  - status: supported
+  - evidence: run_20260609_doc_weekly_001/src_006, run_20260609_doc_weekly_001/src_009, run_20260609_doc_weekly_001/src_011, run_20260609_doc_weekly_001/src_017
+  - note: 12-10 三次（规划下周排期方向、明确知识问答部署策略、建议不花时间在自动化改写）和 12-24 一次（梳理知识问答标准交付路径），均在追问同时直接给出方向，跨两个日期稳定出现。
+
+- 要求将项目进度纳入固定载体统一管理，并关联到常规汇报渠道（如周报）。
+  - status: supported
+  - evidence: run_20260609_doc_weekly_001/src_017, run_20260609_doc_weekly_001/src_019
+  - note: 12-24 两个不同场景均出现：知识问答要节后整理项目进度文档，VOC 需求要有进度管理表并把链接放入周报；显示对进度透明化、可追踪的稳定管理偏好。
