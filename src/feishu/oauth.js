@@ -69,8 +69,9 @@ function getAuthUrl() {
   const redirectUri = encodeURIComponent(
     process.env.FEISHU_REDIRECT_URI || 'http://localhost:3000/oauth/callback'
   );
-  // Scopes: read messages + resolve user names
+  // Scopes: list chats + read messages + resolve user names
   const scope = encodeURIComponent([
+    'im:chat:readonly',
     'im:message:readonly',
     'contact:contact.base:readonly',
   ].join(' '));

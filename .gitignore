@@ -4,3 +4,4 @@ data/
 /audit/
 evals/report-*.json
 *.log
+.DS_Store

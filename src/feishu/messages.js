@@ -1,5 +1,22 @@
-const { getFeishuClient } = require('./client');
+const https = require('https');
 const { getValidToken, hasValidAuth } = require('./oauth');
+
+function httpsGet(path, token) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'open.feishu.cn',
+      path,
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    }, res => {
+      let data = '';
+      res.on('data', d => { data += d; });
+      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
 /**
  * Read messages from a chat within a time range, optionally filtered by keyword.
@@ -15,24 +32,22 @@ async function readMessages({ chatId, startMs, endMs, keyword, maxCount = 200 })
   if (!chatId) throw new Error('chatId is required');
   if (!startMs || !endMs) throw new Error('startMs and endMs are required');
 
-  const client = getFeishuClient();
-  // Use boss's user token when available — allows reading groups without bot membership
-  const callOpts = hasValidAuth() ? { userAccessToken: await getValidToken() } : undefined;
-  if (callOpts) console.log('[messages] using boss user token');
+  let token;
+  if (hasValidAuth()) {
+    token = await getValidToken();
+    console.log('[messages] using boss user token');
+  } else {
+    throw new Error('No valid user token. Run: node cli-boss.js auth-url');
+  }
 
   const collected = [];
   let pageToken;
 
   while (collected.length < maxCount) {
-    const params = {
-      container_id_type: 'chat',
-      container_id: chatId,
-      page_size: 50,
-      sort_type: 'ByCreateTimeDesc',
-    };
-    if (pageToken) params.page_token = pageToken;
+    let qs = `container_id_type=chat&container_id=${chatId}&page_size=50&sort_type=ByCreateTimeDesc`;
+    if (pageToken) qs += `&page_token=${encodeURIComponent(pageToken)}`;
 
-    const res = await client.im.message.list({ params }, callOpts);
+    const res = await httpsGet(`/open-apis/im/v1/messages?${qs}`, token);
     if (res.code !== 0) throw new Error(`Feishu API error ${res.code}: ${res.msg}`);
 
     const items = res.data?.items || [];
@@ -41,7 +56,7 @@ async function readMessages({ chatId, startMs, endMs, keyword, maxCount = 200 })
     let reachedOlder = false;
     for (const item of items) {
       const ts = parseInt(item.create_time, 10);
-      if (ts < startMs) { reachedOlder = true; break; } // messages older than range — stop pagination
+      if (ts < startMs) { reachedOlder = true; break; }
       if (ts > endMs) continue;
 
       let text = '';

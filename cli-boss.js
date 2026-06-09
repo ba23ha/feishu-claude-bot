@@ -145,16 +145,45 @@ async function handleAuthCallback(code) {
 }
 
 async function listChats() {
-  const { getFeishuClient } = require('./src/feishu/client');
-  const client = getFeishuClient();
-  console.log('\n=== Bot 可访问的群聊 ===\n');
+  const https = require('https');
+  const { getValidToken, hasValidAuth } = require('./src/feishu/oauth');
+
+  if (!hasValidAuth()) {
+    console.log('⚠️  未授权，运行 auth-url 完成授权后可查看郑伟所有群。\n');
+    return;
+  }
+
+  const token = await getValidToken();
+  console.log('\n=== 郑伟所在的所有群聊 ===\n');
+
+  const fetchPage = (pageToken) => new Promise((resolve, reject) => {
+    const qs = `page_size=50${pageToken ? `&page_token=${pageToken}` : ''}`;
+    const req = https.request({
+      hostname: 'open.feishu.cn',
+      path: `/open-apis/im/v1/chats?${qs}`,
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    }, res => {
+      let data = '';
+      res.on('data', d => { data += d; });
+      res.on('end', () => resolve(JSON.parse(data)));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+
   try {
-    const res = await client.im.chat.list({ params: { page_size: 50 } });
-    if (res.code !== 0) { console.error(`API error ${res.code}: ${res.msg}`); return; }
-    const chats = res.data?.items || [];
-    if (chats.length === 0) { console.log('（无可访问群聊，请将 bot 拉入目标群）'); return; }
-    chats.forEach(c => console.log(`  ${c.chat_id}  ${c.name || '（无名群）'}`));
-    console.log();
+    let pageToken;
+    let total = 0;
+    do {
+      const res = await fetchPage(pageToken);
+      if (res.code !== 0) { console.error(`API error ${res.code}: ${res.msg}`); return; }
+      const chats = res.data?.items || [];
+      chats.forEach(c => console.log(`  ${c.chat_id}  ${c.name || '（无名群）'}`));
+      total += chats.length;
+      pageToken = res.data?.page_token;
+    } while (pageToken);
+    console.log(`\n共 ${total} 个群聊\n`);
   } catch (err) {
     console.error('获取群列表失败：', err.message);
   }
