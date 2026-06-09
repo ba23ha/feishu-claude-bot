@@ -63,7 +63,10 @@ async function distill(opts, auditContext) {
       rawParts.push('（指定群聊在该时间范围内无匹配消息）');
     } else {
       rawParts.push(`## 群聊消息（${msgs.length} 条）\n\n`
-        + msgs.map(m => `[${m.timestamp}] ${m.text}`).join('\n'));
+        + msgs.map(m => {
+          const label = m.sender === bossOpenId ? '【郑伟】' : `【成员_${(m.sender || 'unk').slice(-4)}】`;
+          return `[${m.timestamp}] ${label} ${m.text}`;
+        }).join('\n'));
     }
 
     for (const msg of msgs) {
@@ -127,15 +130,17 @@ async function distill(opts, auditContext) {
 
   // ── 5. LLM extraction (raw data is NOT persisted — only insights are saved) ──
   const systemPrompt = `你是一个帮助提炼老板风格和决策原则的助手。
-你的任务是分析提供的飞书历史数据，提炼出与"${targetFile}"相关的具体洞察。
+你的任务是分析提供的飞书群聊历史，**只提炼标注为【郑伟】的发言**中与"${targetFile}"相关的具体洞察。
+群里其他成员的发言（标注为【成员_xxxx】）仅用作理解上下文，不纳入提炼范围。
 
 规则：
+- 只分析【郑伟】标注的消息，不分析其他成员的消息
 - 只提炼真实可观察到的内容，不编造
 - 输出必须是具体的、可操作的描述，不能是空泛的总结
 - 输出格式为纯 Markdown，可以补充到现有文件中
 - 不要重复现有文件中已有的内容
 - 不保留原始敏感信息，只保留抽象的风格/原则描述
-- 如果材料中没有与"${targetFile}"相关的信息，明确说"本次材料中未发现相关内容"`;
+- 如果【郑伟】的发言中没有与"${targetFile}"相关的信息，明确说"本次材料中未发现相关内容"`;
 
   const userMessage = `请从以下材料中提炼与"${targetFile}"相关的洞察：
 
