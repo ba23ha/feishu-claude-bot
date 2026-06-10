@@ -14,6 +14,7 @@ const SKILL_FILES = {
   reply: 'reply.md',
   polish: 'reply.md',
   review: 'review-proposal.md',
+  review_inline: 'review-proposal.md',
   meeting: 'meeting-summary.md',
   delegation: 'task-delegation.md',
   followup: 'follow-up.md',
