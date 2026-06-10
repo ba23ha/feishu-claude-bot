@@ -6,8 +6,9 @@ const path = require('path');
 
 // ─── Boss Copilot ─────────────────────────────────────────────────────────────
 const { isBoss } = require('./src/bot/permissions');
-const { detectTaskType } = require('./src/bot/router');
-const { handleTask, handleClarification } = require('./src/bot/handler');
+const { detectTaskType, extractDocToken } = require('./src/bot/router');
+const { handleTask, handleInlineReview, handleClarification } = require('./src/bot/handler');
+const { writeDocComment } = require('./src/feishu/docs');
 const { distill, parseDistillCommand } = require('./src/soul/updater');
 const { dryRun, formatDryRunMessage } = require('./src/audit/dry-run');
 const { createAuditContext } = require('./src/audit/runner');
@@ -15,6 +16,8 @@ const { generateReport } = require('./src/audit/report');
 
 // pending distill state: chatId → { opts, preview, expiresAt }
 const pendingDistills = new Map();
+// pending inline review state: chatId → { comments, docToken, expiresAt }
+const pendingInlineReviews = new Map();
 const PENDING_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // ─── Skill 数据源配置（严格执行，所有 skill 基于此用户数据生成）────────────────
@@ -316,6 +319,50 @@ async function handleRegularMessage(openId, chatId, userText) {
   });
 }
 
+// ─── Boss Copilot: execute confirmed inline review ────────────────────────────
+async function executeInlineReview({ comments, docToken }, chatId) {
+  const results = [];
+  for (const c of comments) {
+    const res = await writeDocComment(docToken, 'docx', c.comment_draft, c.selected_text);
+    results.push(res);
+  }
+
+  const succeeded = results.filter(r => r.success).length;
+  const failed = results.filter(r => !r.success).length;
+
+  if (succeeded > 0) {
+    const msg = `✅ 已写入 ${succeeded} 条评论到文档。${failed > 0 ? `\n⚠️ ${failed} 条写入失败，可手动复制。` : ''}`;
+    await sendMessage(chatId, msg);
+  } else {
+    const lines = ['⚠️ API 写入失败，以下为可复制清单：\n'];
+    comments.forEach((c, i) => {
+      lines.push(`${i + 1}. 划线：「${(c.selected_text || '').slice(0, 60)}」`);
+      lines.push(`   评论：${c.comment_draft}\n`);
+    });
+    await sendMessage(chatId, lines.join('\n'));
+  }
+
+  // Audit record
+  try {
+    const record = {
+      run_id: `run_${new Date().toISOString().replace(/[:.]/g, '').slice(0, 15)}_inline_comment`,
+      source_type: 'feishu_doc',
+      document_id: docToken,
+      operator: 'boss',
+      review_mode: 'inline_comment',
+      generated_comment_count: comments.length,
+      confirmed_comment_count: succeeded,
+      entered_distillation: false,
+      target_skill: 'skills/review-proposal.md',
+      created_at: new Date().toISOString(),
+    };
+    fs.appendFileSync(
+      path.join(__dirname, 'boss-bot/audit/source-map.jsonl'),
+      JSON.stringify(record) + '\n'
+    );
+  } catch {}
+}
+
 // ─── Boss Copilot: execute confirmed distill with full audit trail ────────────
 async function executeDryRunConfirmed({ opts, preview }, chatId, operator) {
   try {
@@ -383,6 +430,25 @@ const dispatcher = new EventDispatcher({}).register({
 
     // ── Boss Copilot routing ──────────────────────────────────────────────────
     try {
+      // ── Boss-only: check pending inline review confirmation ───────────────
+      if (isBoss(openId) && pendingInlineReviews.has(chatId)) {
+        const pending = pendingInlineReviews.get(chatId);
+        if (Date.now() > pending.expiresAt) {
+          pendingInlineReviews.delete(chatId);
+          await sendMessage(chatId, '⏰ 确认超时，批注操作已取消。');
+        } else if (/^确认$|^confirm$/i.test(userText.trim())) {
+          pendingInlineReviews.delete(chatId);
+          await executeInlineReview(pending, chatId);
+          return;
+        } else if (/^取消$|^cancel$/i.test(userText.trim())) {
+          pendingInlineReviews.delete(chatId);
+          await sendMessage(chatId, '✅ 已取消，未写入任何评论。');
+          return;
+        } else {
+          pendingInlineReviews.delete(chatId);
+        }
+      }
+
       // ── Boss-only: check pending distill confirmation ─────────────────────
       if (isBoss(openId) && pendingDistills.has(chatId)) {
         const pending = pendingDistills.get(chatId);
@@ -422,6 +488,27 @@ const dispatcher = new EventDispatcher({}).register({
         const preview = await dryRun(opts);
         pendingDistills.set(chatId, { opts, preview, expiresAt: Date.now() + PENDING_TTL_MS });
         await sendMessage(chatId, formatDryRunMessage(preview));
+        return;
+      }
+
+      // ── review_inline: read doc + generate inline comment suggestions ───────
+      if (taskType === 'review_inline') {
+        if (!isBoss(openId)) {
+          await sendMessage(chatId, '⛔ 文档批注功能仅 boss 本人可用。');
+          return;
+        }
+        const docInfo = extractDocToken(userText);
+        if (!docInfo) {
+          await sendMessage(chatId, '请在消息中附上飞书文档链接（docx 或 wiki 地址）。');
+          return;
+        }
+        await sendMessage(chatId, '⏳ 正在读取文档并分析...');
+        const maxComments = /详细批注/.test(userText) ? 10 : 5;
+        const { preview, comments, docToken } = await handleInlineReview(
+          docInfo.token, docInfo.urlType, userText, maxComments
+        );
+        pendingInlineReviews.set(chatId, { comments, docToken, expiresAt: Date.now() + PENDING_TTL_MS });
+        await sendMessage(chatId, preview);
         return;
       }
 
