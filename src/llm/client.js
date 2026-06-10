@@ -25,6 +25,7 @@ async function generate(systemPrompt, userMessage, opts = {}) {
   return new Promise((resolve, reject) => {
     const proc = spawn('claude', ['-p', fullPrompt], {
       env: { ...process.env },
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
 
     let stdout = '';
