@@ -110,4 +110,58 @@ async function readDoc(docToken) {
   throw new Error(`Could not read doc: ${docToken}`);
 }
 
-module.exports = { readDoc, resolveWikiNode, readDocComments };
+/**
+ * Write a single inline comment to a Feishu document using the boss's OAuth token.
+ * Falls back gracefully if the API doesn't support quote-based inline comments.
+ *
+ * @param {string} fileToken   Document token
+ * @param {string} fileType    'docx' | 'doc'
+ * @param {string} commentText The comment body text
+ * @param {string} [quoteText] The selected text to highlight (inline anchor)
+ * @returns {Promise<{success: boolean, commentId?: string, error?: string}>}
+ */
+async function writeDocComment(fileToken, fileType = 'docx', commentText, quoteText) {
+  const token = await getValidToken();
+
+  const body = {
+    content: {
+      elements: [{ type: 'text_run', text_run: { text: commentText } }],
+    },
+  };
+  if (quoteText) body.quote = quoteText;
+
+  const bodyStr = JSON.stringify(body);
+
+  return new Promise((resolve) => {
+    const req = https.request({
+      hostname: 'open.feishu.cn',
+      path: `/open-apis/drive/v1/files/${fileToken}/comments?file_type=${fileType}`,
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(bodyStr),
+      },
+    }, res => {
+      let data = '';
+      res.on('data', d => { data += d; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.code === 0) {
+            resolve({ success: true, commentId: parsed.data?.comment?.comment_id });
+          } else {
+            resolve({ success: false, error: `API ${parsed.code}: ${parsed.msg}` });
+          }
+        } catch (e) {
+          resolve({ success: false, error: e.message });
+        }
+      });
+    });
+    req.on('error', e => resolve({ success: false, error: e.message }));
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+module.exports = { readDoc, resolveWikiNode, readDocComments, writeDocComment };
