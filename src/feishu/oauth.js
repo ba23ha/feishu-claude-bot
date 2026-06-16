@@ -76,6 +76,7 @@ function getAuthUrl() {
     'contact:contact.base:readonly',
     'wiki:wiki:readonly',
     'drive:drive:readonly',
+    'docx:document:readonly',
   ].join(' '));
   return `https://open.feishu.cn/open-apis/authen/v1/authorize`
     + `?app_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&state=boss-distill`;

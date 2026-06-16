@@ -10,9 +10,12 @@ function httpsGet(path, token) {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` },
     }, res => {
-      let data = '';
-      res.on('data', d => { data += d; });
-      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
+      const chunks = [];
+      res.on('data', d => chunks.push(d));
+      res.on('end', () => {
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
+        catch (e) { reject(e); }
+      });
     });
     req.on('error', reject);
     req.end();
@@ -74,7 +77,7 @@ async function readDocComments(fileToken, fileType = 'docx', authorId = null) {
         }
       }
     }
-    pageToken = res.data?.page_token;
+    pageToken = res.data?.has_more ? res.data?.page_token : null;
   } while (pageToken);
 
   return results;
@@ -82,32 +85,22 @@ async function readDocComments(fileToken, fileType = 'docx', authorId = null) {
 
 /**
  * Read the content of a Feishu doc by token.
- * Returns the text content (blocks flattened to string).
+ * Uses user OAuth token (requires docx:document:readonly scope).
  * @param {string} docToken
  * @returns {Promise<string>}
  */
 async function readDoc(docToken) {
   if (!docToken) throw new Error('docToken is required');
-  const client = getFeishuClient();
+  const token = await getValidToken();
 
-  // Try docx API first (newer format)
-  try {
-    const res = await client.docx.document.rawContent({
-      path: { document_id: docToken },
-    });
-    if (res.code === 0) return res.data?.content || '';
-  } catch {}
+  // Try docx raw_content with user token
+  const res = await httpsGet(
+    `/open-apis/docx/v1/documents/${docToken}/raw_content`,
+    token
+  );
+  if (res.code === 0) return res.data?.content || '';
 
-  // Fallback: try doc API (older format)
-  try {
-    const res = await client.doc.v2.rawContent({
-      path: { docToken },
-      params: { lang: 0 },
-    });
-    if (res.code === 0) return res.data?.content || '';
-  } catch {}
-
-  throw new Error(`Could not read doc: ${docToken}`);
+  throw new Error(`Could not read doc: ${docToken} (code ${res.code}: ${res.msg})`);
 }
 
 /**
@@ -143,11 +136,11 @@ async function writeDocComment(fileToken, fileType = 'docx', commentText, quoteT
         'Content-Length': Buffer.byteLength(bodyStr),
       },
     }, res => {
-      let data = '';
-      res.on('data', d => { data += d; });
+      const chunks = [];
+      res.on('data', d => chunks.push(d));
       res.on('end', () => {
         try {
-          const parsed = JSON.parse(data);
+          const parsed = JSON.parse(Buffer.concat(chunks).toString('utf8'));
           if (parsed.code === 0) {
             resolve({ success: true, commentId: parsed.data?.comment?.comment_id });
           } else {

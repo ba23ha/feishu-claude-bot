@@ -11,13 +11,8 @@ const SOUL_FILES = ['style', 'decision', 'management', 'communication', 'taboos'
 // 'distill' task type is handled separately in soul/updater.js and does not use loadSkill()
 // 'polish' is merged into 'reply'
 const SKILL_FILES = {
-  reply: 'reply.md',
-  polish: 'reply.md',
-  review: 'review-proposal.md',
   review_inline: 'review-proposal.md',
-  meeting: 'meeting-summary.md',
-  delegation: 'task-delegation.md',
-  followup: 'follow-up.md',
+  daily_report: 'daily-report.md',
 };
 
 function loadSoul() {
@@ -53,14 +48,16 @@ function loadSystemPromptTemplate() {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function buildSystemPrompt() {
+function buildSystemPrompt(roleContext = '') {
   const template = loadSystemPromptTemplate();
   const soul = loadSoul();
   const soulText = SOUL_FILES
     .filter(k => soul[k])
     .map(k => `### ${k}\n${soul[k]}`)
     .join('\n\n---\n\n');
-  return template.replace('{{BOSS_SOUL}}', soulText);
+  let result = template.replace('{{BOSS_SOUL}}', soulText);
+  if (roleContext) result += `\n\n## 当前对话角色\n\n${roleContext}`;
+  return result;
 }
 
 module.exports = { loadSoul, loadSkill, loadMemory, loadPrompt, buildSystemPrompt };

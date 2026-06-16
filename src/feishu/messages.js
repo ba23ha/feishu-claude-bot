@@ -9,9 +9,12 @@ function httpsGet(path, token) {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` },
     }, res => {
-      let data = '';
-      res.on('data', d => { data += d; });
-      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
+      const chunks = [];
+      res.on('data', d => chunks.push(d));
+      res.on('end', () => {
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
+        catch (e) { reject(e); }
+      });
     });
     req.on('error', reject);
     req.end();
@@ -85,4 +88,37 @@ async function readMessages({ chatId, startMs, endMs, keyword, maxCount = 200 })
   return collected.reverse();
 }
 
-module.exports = { readMessages };
+/**
+ * List all chats the authorized user (boss) is in.
+ * @returns {Promise<Array<{chatId: string, name: string, type: string}>>}
+ */
+async function listAllChats() {
+  const token = await getValidToken();
+  const results = [];
+  let pageToken;
+  do {
+    const qs = `page_size=50${pageToken ? `&page_token=${encodeURIComponent(pageToken)}` : ''}`;
+    const res = await httpsGet(`/open-apis/im/v1/chats?${qs}`, token);
+    if (res.code !== 0) throw new Error(`List chats error ${res.code}: ${res.msg}`);
+    for (const c of res.data?.items || []) {
+      results.push({ chatId: c.chat_id, name: c.name || c.chat_id, type: c.chat_type });
+    }
+    pageToken = res.data?.has_more ? res.data?.page_token : null;
+  } while (pageToken);
+  return results;
+}
+
+/**
+ * Send a private message to a user by open_id using the app client.
+ * Requires the client to be passed in to avoid circular dependency.
+ */
+async function sendPrivateMessage(client, openId, text) {
+  const res = await client.im.message.create({
+    data: { receive_id: openId, msg_type: 'text', content: JSON.stringify({ text }) },
+    params: { receive_id_type: 'open_id' },
+  });
+  if (res.code !== 0) throw new Error(`sendPrivateMessage error ${res.code}: ${res.msg}`);
+  return res;
+}
+
+module.exports = { readMessages, listAllChats, sendPrivateMessage };

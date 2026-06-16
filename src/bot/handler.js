@@ -30,8 +30,8 @@ function extractJSON(text) {
  * @param {string} userInput  Raw message from boss
  * @returns {Promise<string>}  The response to send back
  */
-async function handleTask(taskType, userInput) {
-  const systemPrompt = buildSystemPrompt();
+async function handleTask(taskType, userInput, opts = {}) {
+  const systemPrompt = buildSystemPrompt(opts.roleContext);
 
   if (taskType === 'general') {
     return generate(systemPrompt, userInput);
@@ -71,7 +71,7 @@ async function handleTask(taskType, userInput) {
  * @param {number} [maxComments=5]
  * @returns {Promise<{ preview: string, comments: object[], docToken: string }>}
  */
-async function handleInlineReview(token, urlType, userInput, maxComments = 5) {
+async function handleInlineReview(token, urlType, userInput, maxComments = 5, opts = {}) {
   let docToken = token;
   if (urlType === 'wiki') {
     const node = await resolveWikiNode(token);
@@ -83,7 +83,7 @@ async function handleInlineReview(token, urlType, userInput, maxComments = 5) {
     throw new Error('文档内容为空或过短，无法分析');
   }
 
-  const systemPrompt = buildSystemPrompt();
+  const systemPrompt = buildSystemPrompt(opts.roleContext);
   const skillContent = loadSkill('review_inline');
   const projects = loadMemory('projects');
   const glossary = loadMemory('glossary');

@@ -5,7 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 // ─── Boss Copilot ─────────────────────────────────────────────────────────────
-const { isBoss } = require('./src/bot/permissions');
+const { isBoss, isMember } = require('./src/bot/permissions');
+const { scheduleDailyReport } = require('./src/tasks/daily-report');
 const { detectTaskType, extractDocToken } = require('./src/bot/router');
 const { handleTask, handleInlineReview, handleClarification } = require('./src/bot/handler');
 const { writeDocComment } = require('./src/feishu/docs');
@@ -379,13 +380,28 @@ async function executeDryRunConfirmed({ opts, preview }, chatId, operator) {
 }
 
 // ─── Send Message ─────────────────────────────────────────────────────────────
+async function sendPrivateToBoss(text) {
+  const bossId = process.env.BOSS_OPEN_ID;
+  if (!bossId) return;
+  try {
+    const res = await client.im.message.create({
+      data: { receive_id: bossId, msg_type: 'text', content: JSON.stringify({ text }) },
+      params: { receive_id_type: 'open_id' },
+    });
+    if (res.code !== 0) console.error(`[send-boss] FAIL code=${res.code} msg=${res.msg}`);
+    else console.log(`[send-boss] OK len=${text.length}`);
+  } catch (err) { console.error(`[send-boss] EXCEPTION: ${err.message}`); }
+}
+
 async function sendMessage(chatId, text) {
   try {
-    await client.im.message.create({
+    const res = await client.im.message.create({
       data: { receive_id: chatId, msg_type: 'text', content: JSON.stringify({ text }) },
       params: { receive_id_type: 'chat_id' },
     });
-  } catch (err) { console.error('Send failed:', err.message); }
+    if (res.code !== 0) console.error(`[send] FAIL code=${res.code} msg=${res.msg}`);
+    else console.log(`[send] OK chat=${chatId} len=${text.length}`);
+  } catch (err) { console.error(`[send] EXCEPTION: ${err.message}`); }
 }
 
 // ─── Event Dispatcher ─────────────────────────────────────────────────────────
@@ -394,16 +410,31 @@ const processedMsgIds = new Set();
 const dispatcher = new EventDispatcher({}).register({
   'im.message.receive_v1': async (data) => {
     const msg = data.message;
-    if (!msg || msg.message_type !== 'text') return;
+    const t0 = Date.now();
+    console.log(`[recv] event_id=${data.event_id} msg_id=${msg?.message_id} type=${msg?.message_type} chat=${msg?.chat_id}`);
 
-    if (processedMsgIds.has(msg.message_id)) return;
+    if (!msg || msg.message_type !== 'text') {
+      console.log(`[recv] dropped: not text (type=${msg?.message_type})`);
+      return;
+    }
+
+    if (processedMsgIds.has(msg.message_id)) {
+      console.log(`[recv] dropped: duplicate msg_id=${msg.message_id}`);
+      return;
+    }
     processedMsgIds.add(msg.message_id);
     if (processedMsgIds.size > 1000) processedMsgIds.delete(processedMsgIds.values().next().value);
 
     let userText;
     try { userText = JSON.parse(msg.content).text.replace(/^@\S+\s*/, '').trim(); }
-    catch { return; }
-    if (!userText) return;
+    catch (e) {
+      console.log(`[recv] dropped: content parse error: ${e.message}, content=${msg.content}`);
+      return;
+    }
+    if (!userText) {
+      console.log(`[recv] dropped: empty text after trim`);
+      return;
+    }
 
     const senderOpenId = data.sender?.sender_id?.open_id;
     const chatId = msg.chat_id;
@@ -428,28 +459,26 @@ const dispatcher = new EventDispatcher({}).register({
     const openId = senderOpenId;
     console.log(`[${new Date().toISOString()}] ${openId}: ${userText}`);
 
-    // ── Boss Copilot routing ──────────────────────────────────────────────────
+    // ── Routing ───────────────────────────────────────────────────────────────
     try {
-      // ── Boss-only: check pending inline review confirmation ───────────────
-      if (isBoss(openId) && pendingInlineReviews.has(chatId)) {
-        const pending = pendingInlineReviews.get(chatId);
-        if (Date.now() > pending.expiresAt) {
-          pendingInlineReviews.delete(chatId);
-          await sendMessage(chatId, '⏰ 确认超时，批注操作已取消。');
-        } else if (/^确认$|^confirm$/i.test(userText.trim())) {
-          pendingInlineReviews.delete(chatId);
-          await executeInlineReview(pending, chatId);
-          return;
-        } else if (/^取消$|^cancel$/i.test(userText.trim())) {
-          pendingInlineReviews.delete(chatId);
-          await sendMessage(chatId, '✅ 已取消，未写入任何评论。');
-          return;
-        } else {
-          pendingInlineReviews.delete(chatId);
-        }
+      // Only boss and whitelisted employees can use the bot
+      if (!isMember(openId)) {
+        console.log(`[recv] ignored: non-member ${openId}`);
+        return;
       }
 
-      // ── Boss-only: check pending distill confirmation ─────────────────────
+      // Role context injected into every LLM call so the model knows who it's talking to
+      const roleContext = isBoss(openId)
+        ? '当前对话者是郑伟本人，可以直接、简短地回复。'
+        : '当前对话者是郑伟的员工。你代表郑伟向下属沟通，语气体现上级对下属的工作风格，直接、清晰、可执行。';
+
+      // /create-skill (admin dev command, boss only)
+      if (userText.startsWith('/create-skill') && isBoss(openId)) {
+        await handleCreateSkill(openId, chatId, userText.slice('/create-skill'.length).trim());
+        return;
+      }
+
+      // Distill (boss only)
       if (isBoss(openId) && pendingDistills.has(chatId)) {
         const pending = pendingDistills.get(chatId);
         if (Date.now() > pending.expiresAt) {
@@ -468,20 +497,12 @@ const dispatcher = new EventDispatcher({}).register({
         }
       }
 
-      // ── Task routing (all users) ──────────────────────────────────────────
       const taskType = detectTaskType(userText);
 
-      if (taskType === 'distill') {
-        if (!isBoss(openId)) {
-          await sendMessage(chatId, '⛔ 蒸馏功能仅 boss 本人可用。');
-          return;
-        }
+      if (taskType === 'distill' && isBoss(openId)) {
         const opts = parseDistillCommand(userText);
         if (!opts.targetFile) {
-          await sendMessage(chatId,
-            '请指定要更新的 soul 文件，例如：\n'
-            + '/distill --file=decision --chat=oc_xxx --days=90 --keyword=方案评审 --reason=提炼决策标准'
-          );
+          await sendMessage(chatId, '请指定要更新的 soul 文件，例如：\n/distill --file=decision --chat=oc_xxx --days=90 --reason=提炼决策标准');
           return;
         }
         await sendMessage(chatId, '⏳ 正在生成访问清单...');
@@ -491,47 +512,32 @@ const dispatcher = new EventDispatcher({}).register({
         return;
       }
 
-      // ── review_inline: read doc + generate inline comment suggestions ───────
+      // ── 文档预审（所有成员可用）────────────────────────────────────────────
       if (taskType === 'review_inline') {
-        if (!isBoss(openId)) {
-          await sendMessage(chatId, '⛔ 文档批注功能仅 boss 本人可用。');
-          return;
-        }
         const docInfo = extractDocToken(userText);
         if (!docInfo) {
-          await sendMessage(chatId, '请在消息中附上飞书文档链接（docx 或 wiki 地址）。');
+          await sendMessage(chatId, '请附上飞书文档链接（docx 或 wiki 地址）。');
           return;
         }
         await sendMessage(chatId, '⏳ 正在读取文档并分析...');
         const maxComments = /详细批注/.test(userText) ? 10 : 5;
         const { preview, comments, docToken } = await handleInlineReview(
-          docInfo.token, docInfo.urlType, userText, maxComments
+          docInfo.token, docInfo.urlType, userText, maxComments, { roleContext }
         );
-        pendingInlineReviews.set(chatId, { comments, docToken, expiresAt: Date.now() + PENDING_TTL_MS });
-        await sendMessage(chatId, preview);
+        await executeInlineReview({ comments, docToken }, chatId);
         return;
       }
 
-      if (taskType !== 'general') {
-        await sendMessage(chatId, '⏳ 处理中...');
-        const response = await handleTask(taskType, userText);
-        for (let i = 0; i < response.length; i += 3800) {
-          await sendMessage(chatId, response.slice(i, i + 3800));
-        }
-        return;
+      // Fallback: general chat via Claude
+      await sendMessage(chatId, '⏳ 正在思考...');
+      const reply = await handleTask('general', userText, { roleContext });
+      for (let i = 0; i < reply.length; i += 3800) {
+        await sendMessage(chatId, reply.slice(i, i + 3800));
       }
+
     } catch (err) {
-      console.error('[boss-copilot]', err.message);
+      console.error('[routing]', err.message);
       await sendMessage(chatId, `⚠️ 出错了：${err.message}`);
-      return;
-    }
-    // ── end Boss Copilot routing ──────────────────────────────────────────────
-
-    // ── Fallback: general / existing commands ─────────────────────────────────
-    if (userText.startsWith('/create-skill')) {
-      await handleCreateSkill(openId, chatId, userText.slice('/create-skill'.length).trim());
-    } else {
-      await handleRegularMessage(openId, chatId, userText);
     }
   },
 });
@@ -543,6 +549,45 @@ const wsClient = new WSClient({
   loggerLevel: LoggerLevel.error,
 });
 
+// Prevent unhandled rejections / exceptions from crashing the process
+process.on('uncaughtException', err => console.error('[uncaught]', err.message));
+process.on('unhandledRejection', reason => console.error('[unhandled rejection]', reason));
+
+// Graceful shutdown: close WS before exit so pm2 restart gets a clean slate
+async function shutdown(signal) {
+  console.log(`[shutdown] ${signal} received, closing WebSocket...`);
+  try { await wsClient.stop?.(); } catch {}
+  setTimeout(() => process.exit(0), 1500);
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+
 console.log('🚀 Starting Feishu-Claude bridge...');
 wsClient.start({ eventDispatcher: dispatcher });
 console.log('✅ Connected to Feishu via WebSocket');
+
+// ─── Daily Report Scheduler ───────────────────────────────────────────────────
+const bossOpenId = process.env.BOSS_OPEN_ID;
+if (bossOpenId) {
+  scheduleDailyReport(async (text) => {
+    for (let i = 0; i < text.length; i += 3800) {
+      await sendPrivateToBoss(text.slice(i, i + 3800));
+    }
+  });
+} else {
+  console.warn('[daily-report] BOSS_OPEN_ID not set, scheduler disabled');
+}
+
+// Watchdog: exit(1) if SDK completely silent for 2h — pm2 will restart and reconnect
+let lastHeartbeatAt = Date.now();
+const _origLog = console.log.bind(console);
+const _origErr = console.error.bind(console);
+console.log = (...a) => { lastHeartbeatAt = Date.now(); _origLog(...a); };
+console.error = (...a) => { lastHeartbeatAt = Date.now(); _origErr(...a); };
+
+setInterval(() => {
+  if (Date.now() - lastHeartbeatAt > 2 * 60 * 60 * 1000) {
+    _origLog('[watchdog] No activity for 2h, restarting process...');
+    process.exit(1);
+  }
+}, 10 * 60 * 1000);

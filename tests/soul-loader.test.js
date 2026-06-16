@@ -13,7 +13,7 @@ describe('soul loader', () => {
   });
 
   test('loadSkill returns string content for valid task type', () => {
-    const skill = loadSkill('reply');
+    const skill = loadSkill('review_inline');
     expect(typeof skill).toBe('string');
     expect(skill.length).toBeGreaterThan(0);
   });
@@ -23,7 +23,7 @@ describe('soul loader', () => {
   });
 
   test('loadPrompt (deprecated alias) still works', () => {
-    const prompt = loadPrompt('reply');
+    const prompt = loadPrompt('review_inline');
     expect(typeof prompt).toBe('string');
     expect(prompt.length).toBeGreaterThan(0);
   });

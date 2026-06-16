@@ -5,3 +5,4 @@ data/
 evals/report-*.json
 *.log
 .DS_Store
+.netlify/
