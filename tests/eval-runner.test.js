@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const EVALS_DIR = path.join(__dirname, '..', 'evals');
-const EVAL_FILES = ['reply-cases.jsonl', 'review-cases.jsonl', 'meeting-cases.jsonl'];
+const EVAL_FILES = ['review-cases.jsonl', 'daily-report-cases.jsonl'];
 
 describe('eval files', () => {
   for (const filename of EVAL_FILES) {
