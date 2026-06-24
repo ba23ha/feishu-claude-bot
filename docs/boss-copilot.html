@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boss Copilot — 阶段汇报</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: #0f1117;
+  color: #e2e8f0;
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(135deg, #1a1f2e 0%, #0f1117 60%);
+  border-bottom: 1px solid #1e2530;
+  padding: 72px 48px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(79,142,247,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(79,142,247,0.12);
+  border: 1px solid rgba(79,142,247,0.3);
+  color: #4F8EF7;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+.hero h1 { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+.hero h1 span { color: #4F8EF7; }
+.hero p { color: #8b98b0; font-size: 16px; max-width: 560px; margin: 0 auto 24px; }
+.hero-stats {
+  display: inline-flex;
+  gap: 32px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #1e2530;
+  border-radius: 12px;
+  padding: 14px 32px;
+}
+.stat { text-align: center; }
+.stat-num { font-size: 22px; font-weight: 700; color: #4F8EF7; }
+.stat-label { font-size: 11px; color: #6b7a95; margin-top: 2px; }
+
+/* ── Layout ── */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 48px 80px; }
+.section {
+  margin-top: 0;
+  height: 100vh;
+  scroll-snap-align: start;
+  padding: 72px 72px 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: #4F8EF7; margin-bottom: 4px;
+}
+.section-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+
+/* ── Arch ── */
+.arch-flow {
+  display: flex;
+  align-items: stretch;
+  background: #141820;
+  border: 1px solid #1e2530;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.arch-node { flex: 1; padding: 18px 18px; }
+.arch-node + .arch-node { border-left: 1px solid #1e2530; }
+.arch-node-icon { font-size: 28px; margin-bottom: 12px; }
+.arch-node-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #4F8EF7; margin-bottom: 6px; }
+.arch-node-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+.arch-node-body { font-size: 13px; color: #8b98b0; line-height: 1.6; }
+.arch-chain {
+  margin-top: 12px;
+  background: rgba(79,142,247,0.06);
+  border: 1px solid rgba(79,142,247,0.15);
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 13px;
+  color: #7a8fb0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.arch-chain span { color: #4F8EF7; font-weight: 600; }
+.arch-chain .sep { color: #2d3748; }
+
+/* ── Permission ── */
+.perm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.perm-card { background: #141820; border: 1px solid #1e2530; border-radius: 14px; overflow: hidden; }
+.perm-card-head {
+  padding: 10px 16px;
+  border-bottom: 1px solid #1e2530;
+  font-size: 13px; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 8px;
+}
+.perm-card-head .dot { width: 8px; height: 8px; border-radius: 50%; background: #4F8EF7; flex-shrink: 0; }
+.perm-item { display: flex; align-items: flex-start; gap: 12px; padding: 7px 16px; border-bottom: 1px solid #0f1117; font-size: 12px; }
+.perm-item:last-child { border-bottom: none; }
+.perm-scope {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 11px; color: #4F8EF7;
+  background: rgba(79,142,247,0.1);
+  padding: 2px 8px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+}
+.perm-desc { color: #8b98b0; }
+.perm-sublabel { padding: 10px 20px 4px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #6b7a95; text-transform: uppercase; border-top: 1px solid #1e2530; margin-top: 4px; }
+
+/* ── Role table ── */
+.role-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; }
+.role-table th {
+  background: #0d1018; color: #6b7a95;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  padding: 12px 16px; text-align: left; border-bottom: 1px solid #1e2530;
+}
+.role-table td { padding: 9px 14px; border-bottom: 1px solid #1a2030; font-size: 12px; color: #c4cdd8; vertical-align: top; }
+.role-table tr:last-child td { border-bottom: none; }
+.role-table tr.boss-row td { background: rgba(79,142,247,0.07); }
+.role-table tr.boss-row td:first-child { border-left: 3px solid #4F8EF7; }
+.role-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-boss { background: rgba(79,142,247,0.2); color: #4F8EF7; }
+.badge-employee { background: rgba(52,199,89,0.2); color: #34C759; }
+.badge-other { background: rgba(255,255,255,0.06); color: #6b7a95; }
+.badge-admin { background: rgba(255,149,0,0.15); color: #FF9500; }
+.badge-deferred { font-size: 10px; background: rgba(255,149,0,0.1); color: #FF9500; padding: 1px 7px; border-radius: 10px; margin-left: 4px; }
+.token-note {
+  background: rgba(255,149,0,0.07);
+  border: 1px solid rgba(255,149,0,0.2);
+  border-radius: 10px;
+  padding: 12px 16px; margin: 12px 20px;
+  font-size: 12px; color: #b07030;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+
+/* ── Server Flow ── */
+.flow-wrap {
+  background: #141820;
+  border: 1px solid #1e2530;
+  border-radius: 16px;
+  padding: 24px 28px 20px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.flow-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 0;
+}
+.flow-node {
+  background: #1a2030;
+  border: 1px solid #2a3448;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 100px;
+}
+.flow-node.highlight {
+  border-color: #4F8EF7;
+  background: rgba(79,142,247,0.1);
+  color: #4F8EF7;
+}
+.flow-node.green {
+  border-color: #34C759;
+  background: rgba(52,199,89,0.08);
+  color: #34C759;
+}
+.flow-node.orange {
+  border-color: #FF9500;
+  background: rgba(255,149,0,0.08);
+  color: #FF9500;
+}
+.flow-node.dim { color: #6b7a95; border-color: #1e2530; }
+.flow-arrow-h {
+  color: #2d3748;
+  font-size: 16px;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.flow-arrow-v {
+  text-align: center;
+  color: #2d3748;
+  font-size: 16px;
+  line-height: 1;
+  padding: 6px 0;
+}
+.flow-desc {
+  font-size: 11px;
+  color: #4a5568;
+  text-align: center;
+  margin-top: 5px;
+  font-weight: 400;
+}
+.flow-col { display: flex; flex-direction: column; align-items: center; }
+.flow-branch-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  margin: 0;
+}
+.flow-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.flow-branch-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #4a5568;
+  margin-bottom: 8px;
+}
+.flow-separator {
+  width: 100%;
+  height: 1px;
+  background: #1e2530;
+  margin: 24px 0;
+}
+.flow-always {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px dashed #1e2530;
+  margin-top: 14px;
+}
+.flow-always-label {
+  font-size: 11px;
+  color: #4a5568;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+.flow-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.flow-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7a95;
+}
+.flow-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+}
+.flow-center-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+}
+.v-line {
+  width: 2px;
+  height: 16px;
+  background: #2d3748;
+  margin: 0 auto;
+}
+.fork-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  height: 32px;
+  margin: 0 auto;
+  width: 80%;
+}
+.fork-line::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: #2d3748;
+}
+.fork-line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 1px; height: 100%;
+  background: #2d3748;
+}
+.fork-dot-left, .fork-dot-right, .fork-dot-mid {
+  position: absolute;
+  top: 0;
+  width: 1px; height: 100%;
+  background: #2d3748;
+}
+.fork-dot-left { left: 10%; }
+.fork-dot-right { right: 10%; }
+.merge-line {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  height: 32px;
+  margin: 0 auto;
+  width: 80%;
+}
+.merge-line::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: #2d3748;
+}
+.merge-line::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 1px; height: 100%;
+  background: #2d3748;
+}
+
+/* ── Pros/Cons ── */
+.procon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.procon-card { background: #141820; border: 1px solid #1e2530; border-radius: 14px; overflow: hidden; }
+.procon-head { padding: 16px 20px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e2530; }
+.procon-head.pro { color: #34C759; }
+.procon-head.con { color: #FF6B6B; }
+.procon-item { padding: 9px 18px; border-bottom: 1px solid #0f1117; font-size: 13px; }
+.procon-item:last-child { border-bottom: none; }
+.procon-item-title { font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+.procon-item-desc { color: #6b7a95; font-size: 12px; line-height: 1.6; }
+.procon-item-fix { margin-top: 6px; font-size: 11px; color: #4F8EF7; }
+
+/* ── Conclusions ── */
+.conclusion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.conclusion-card { background: #141820; border: 1px solid #1e2530; border-radius: 14px; padding: 18px; }
+.conclusion-card.full { grid-column: 1 / -1; }
+.conclusion-icon { font-size: 24px; margin-bottom: 12px; }
+.conclusion-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+.conclusion-body { font-size: 13px; color: #8b98b0; line-height: 1.7; }
+.conclusion-body strong { color: #e2e8f0; }
+.conclusion-tag {
+  display: inline-block;
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.2);
+  color: #4F8EF7;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.conclusion-tag.orange { background: rgba(255,149,0,0.1); border-color: rgba(255,149,0,0.2); color: #FF9500; }
+.conclusion-tag.red { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.2); color: #FF6B6B; }
+.risk-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.risk-item { background: rgba(255,107,107,0.05); border-left: 3px solid rgba(255,107,107,0.3); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 12px; color: #8b98b0; }
+.risk-item strong { color: #FF6B6B; }
+.vs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+.vs-col-head { font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 6px 6px 0 0; }
+.vs-col-head.ours { background: rgba(79,142,247,0.15); color: #4F8EF7; }
+.vs-col-head.theirs { background: rgba(52,199,89,0.1); color: #34C759; }
+.vs-col-body { background: #0d1018; border-radius: 0 0 6px 6px; padding: 12px; }
+.vs-item { font-size: 12px; color: #6b7a95; padding: 5px 0; border-bottom: 1px solid #1a2030; }
+.vs-item:last-child { border-bottom: none; }
+.vs-item strong { color: #e2e8f0; }
+
+/* ── Status ── */
+.status-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.status-card { background: #141820; border: 1px solid #1e2530; border-radius: 12px; padding: 14px; }
+.status-card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: #6b7a95; margin-bottom: 12px; text-transform: uppercase; }
+.status-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; font-size: 12px; border-bottom: 1px solid #1a2030; }
+.status-item:last-child { border-bottom: none; }
+.dot-green { color: #34C759; flex-shrink: 0; margin-top: 2px; }
+.dot-yellow { color: #FF9500; flex-shrink: 0; margin-top: 2px; }
+.dot-gray { color: #4a5568; flex-shrink: 0; margin-top: 2px; }
+.progress-bar-wrap { background: #1a2030; border-radius: 100px; height: 6px; overflow: hidden; margin-top: 10px; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #4F8EF7, #34C759); border-radius: 100px; width: 82%; }
+
+/* ── Full-page scroll container ── */
+.fp-container {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+/* ── Top navigation bar ── */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  z-index: 300;
+  background: rgba(10,13,19,0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #1e2530;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-right: 24px;
+}
+.nav-badge {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, #3354c4, #1e3aa8);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.nav-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+.nav-items {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7a95;
+  cursor: pointer;
+  background: none;
+  border: none;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+.nav-item:hover { color: #c4cdd8; background: rgba(255,255,255,0.05); }
+.nav-item.active {
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+}
+.nav-num {
+  font-size: 10px;
+  opacity: 0.4;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.nav-item.active .nav-num { opacity: 0.65; }
+
+footer {
+  text-align: center;
+  padding: 16px 48px 6px;
+  border-top: 1px solid #1e2530;
+  font-size: 12px;
+  color: #3d4a5e;
+  margin-top: 16px;
+}
+
+@media (max-width: 800px) {
+  .section { padding: 72px 20px 20px; }
+  .nav-title { display: none; }
+  .nav-item { padding: 4px 8px; font-size: 11px; }
+  .nav-num { display: none; }
+  .perm-grid, .procon-grid, .status-grid, .conclusion-grid { grid-template-columns: 1fr; }
+  .arch-flow { flex-direction: column; }
+  .arch-node + .arch-node { border-left: none; border-top: 1px solid #1e2530; }
+  .hero { padding: 72px 24px 32px; }
+  .conclusion-card.full { grid-column: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- 顶部固定导航 -->
+<header class="top-nav">
+  <div class="nav-brand">
+    <div class="nav-badge">BC</div>
+    <span class="nav-title">Boss Copilot · 阶段汇报</span>
+  </div>
+  <nav class="nav-items" id="top-nav-items">
+    <button class="nav-item active" data-idx="0"><span class="nav-num">01</span>概览</button>
+    <button class="nav-item" data-idx="1"><span class="nav-num">02</span>产品定位</button>
+    <button class="nav-item" data-idx="2"><span class="nav-num">03</span>Soul &amp; Memory</button>
+    <button class="nav-item" data-idx="3"><span class="nav-num">04</span>Skill 体系</button>
+    <button class="nav-item" data-idx="4"><span class="nav-num">05</span>评测 · 日报</button>
+    <button class="nav-item" data-idx="5"><span class="nav-num">06</span>评测 · 批注</button>
+    <button class="nav-item" data-idx="6"><span class="nav-num">07</span>架构权限</button>
+    <button class="nav-item" data-idx="7"><span class="nav-num">08</span>系统调度</button>
+    <button class="nav-item" data-idx="8"><span class="nav-num">09</span>演进规划</button>
+    <button class="nav-item" data-idx="9"><span class="nav-num">10</span>附录</button>
+  </nav>
+</header>
+
+<!-- 全屏滚动容器 -->
+<div class="fp-container" id="fp-container">
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">BOSS COPILOT · 阶段汇报</div>
+  <h1 style="font-size:52px;letter-spacing:-0.5px;">Boss Copilot</h1>
+  <p style="font-size:20px;color:#4F8EF7;font-weight:600;margin-bottom:8px;">老板的飞书数字分身</p>
+  <p style="font-size:15px;color:#8b98b0;max-width:520px;margin:0 auto 32px;">Soul 人格底座 · Skill 场景扩展 · 让 AI 始终以老板身份处理信息工作</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <span style="font-size:12px;font-weight:600;color:#a78bfa;background:rgba(168,139,250,0.08);border:1px solid rgba(168,139,250,0.25);border-radius:20px;padding:6px 16px;">Soul 人格系统</span>
+    <span style="font-size:12px;font-weight:600;color:#4F8EF7;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.25);border-radius:20px;padding:6px 16px;">Skill 扩展框架</span>
+    <span style="font-size:12px;font-weight:600;color:#34C759;background:rgba(52,199,89,0.08);border:1px solid rgba(52,199,89,0.25);border-radius:20px;padding:6px 16px;">三端通信架构</span>
+    <span style="font-size:12px;font-weight:600;color:#FF9500;background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.25);border-radius:20px;padding:6px 16px;">Eval 测试体系</span>
+  </div>
+</div>
+<!-- 0. 产品全景 -->
+<div class="section" id="overview">
+  <div class="section-label">产品定位</div>
+  <div class="section-title">Boss Copilot 的三项能力</div>
+  <p style="color:#8b98b0;font-size:14px;margin-bottom:14px;">
+    老板的飞书数字分身——Soul 人格底座 + Skill 场景扩展，让 AI 始终以老板身份处理两类信息工作并随时响应对话。
+  </p>
+
+  <!-- 整体比例容器：卡片3份 / 分隔线固定 / 机制盒1份 -->
+  <div style="flex:1;min-height:0;display:grid;grid-template-rows:3fr 26px 1fr;gap:0;padding-bottom:16px;">
+
+    <!-- ① 三张能力卡 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;min-height:0;">
+
+      <!-- 文档批注 -->
+      <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div style="height:3px;background:#34C759;flex-shrink:0;"></div>
+        <div style="padding:18px 20px 16px;flex:1;display:flex;flex-direction:column;min-height:0;">
+          <div style="font-size:30px;margin-bottom:10px;flex-shrink:0;">🗂</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#34C759;margin-bottom:5px;flex-shrink:0;">员工 / 老板 · Skill</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;flex-shrink:0;">文档预审 · 批注写入</div>
+          <div style="font-size:12px;color:#6b7a95;margin-bottom:0;flex-shrink:0;">员工按需触发，批注以老板身份直接写入飞书</div>
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(52,199,89,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#34C759;">1</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">员工发文档链接给 Bot</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(52,199,89,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#34C759;">2</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">Bot 以老板视角分析文档内容</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(52,199,89,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#34C759;">3</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">批注以老板身份写入飞书文档</div>
+            </div>
+          </div>
+          <div style="padding-top:12px;margin-top:auto;border-top:1px solid #1e2530;display:flex;gap:20px;flex-shrink:0;">
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">触发方</div><div style="font-size:12px;font-weight:600;color:#e2e8f0;">员工主动</div></div>
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">输出形式</div><div style="font-size:12px;font-weight:600;color:#e2e8f0;">飞书文档批注</div></div>
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">显示身份</div><div style="font-size:12px;font-weight:600;color:#34C759;">老板本人</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工作群日报 -->
+      <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div style="height:3px;background:#4F8EF7;flex-shrink:0;"></div>
+        <div style="padding:18px 20px 16px;flex:1;display:flex;flex-direction:column;min-height:0;">
+          <div style="font-size:30px;margin-bottom:10px;flex-shrink:0;">📊</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4F8EF7;margin-bottom:5px;flex-shrink:0;">老板专属 · Skill</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;flex-shrink:0;">工作群日报 · 自动汇总</div>
+          <div style="font-size:12px;color:#6b7a95;margin-bottom:0;flex-shrink:0;">无需老板操作，定时推送全天工作群消息摘要</div>
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(79,142,247,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#4F8EF7;">1</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">每工作日 10:00 自动触发，汇总昨日信息</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(79,142,247,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#4F8EF7;">2</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">抓取老板所在群当日消息</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(79,142,247,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#4F8EF7;">3</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">精简摘要推送到老板飞书</div>
+            </div>
+          </div>
+          <div style="padding-top:12px;margin-top:auto;border-top:1px solid #1e2530;display:flex;gap:20px;flex-shrink:0;">
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">触发方</div><div style="font-size:12px;font-weight:600;color:#e2e8f0;">定时自动</div></div>
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">输出形式</div><div style="font-size:12px;font-weight:600;color:#e2e8f0;">飞书私信</div></div>
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">可见范围</div><div style="font-size:12px;font-weight:600;color:#4F8EF7;">仅老板</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 通用对话 -->
+      <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div style="height:3px;background:#FF9500;flex-shrink:0;"></div>
+        <div style="padding:18px 20px 16px;flex:1;display:flex;flex-direction:column;min-height:0;">
+          <div style="font-size:30px;margin-bottom:10px;flex-shrink:0;">💬</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FF9500;margin-bottom:5px;flex-shrink:0;">Boss only · 基础能力</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;flex-shrink:0;">通用对话 · 实时回复</div>
+          <div style="font-size:12px;color:#6b7a95;margin-bottom:0;flex-shrink:0;">Boss 随时发起临时问题，Soul 人格直接驱动回复；非 Boss 消息静默处理</div>
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(255,149,0,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#FF9500;">1</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">用户在 Bot 对话框发任意消息</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(255,149,0,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#FF9500;">2</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">Soul 人格直接驱动，无 Skill 注入</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;min-width:22px;background:rgba(255,149,0,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#FF9500;">3</div>
+              <div style="font-size:13px;color:#c8d0dc;font-weight:500;">飞书消息即时回复</div>
+            </div>
+          </div>
+          <div style="padding-top:12px;margin-top:auto;border-top:1px solid #1e2530;display:flex;gap:20px;flex-shrink:0;">
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">触发方</div><div style="font-size:12px;font-weight:600;color:#FF9500;">Boss only</div></div>
+            <div><div style="font-size:10px;color:#6b7a5;margin-bottom:3px;">输出形式</div><div style="font-size:12px;font-weight:600;color:#e2e8f0;">飞书消息</div></div>
+            <div><div style="font-size:10px;color:#6b7a95;margin-bottom:3px;">回复风格</div><div style="font-size:12px;font-weight:600;color:#FF9500;">Boss 语气</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ② 分隔行 -->
+    <div style="display:flex;align-items:center;gap:14px;padding:0 2px;">
+      <div style="flex:1;height:1px;background:#1e2530;"></div>
+      <span style="font-size:11px;font-weight:600;color:#4a5568;letter-spacing:0.5px;white-space:nowrap;">以上能力由以下 AI 机制共同驱动</span>
+      <div style="flex:1;height:1px;background:#1e2530;"></div>
+    </div>
+
+    <!-- ③ AI 4层机制（带箭头，比例高度） -->
+    <div style="display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr 32px 1fr;gap:0;min-height:0;">
+
+      <div style="background:#141820;border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:7px 12px;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-shrink:0;">
+          <div style="font-size:18px;">🧠</div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">① 人格底座</div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;">Soul + 业务记忆</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#8b98b0;line-height:1.4;flex:1;">989 行 Soul 训练数据定义老板的语气、决策标准与禁忌；3 个业务记忆文件存储人名、项目与专有词汇</div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:center;color:#2d3748;font-size:20px;flex-shrink:0;">→</div>
+
+      <div style="background:#141820;border:1px solid rgba(139,92,246,0.18);border-radius:12px;padding:7px 12px;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-shrink:0;">
+          <div style="font-size:18px;">⚙️</div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#c4b5fd;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">② 实时组装</div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;">每次请求独立拼装</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#8b98b0;line-height:1.4;flex:1;">5 Soul + 3 记忆文件拼成约 15K 字系统指令，每次请求实时读取，配置改动无需重启即生效</div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:center;color:#2d3748;font-size:20px;flex-shrink:0;">→</div>
+
+      <div style="background:#141820;border:1px solid rgba(52,199,89,0.22);border-radius:12px;padding:7px 12px;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-shrink:0;">
+          <div style="font-size:18px;">⚡</div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#86efac;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">③ 技能注入</div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;">按场景动态加载 Skill</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#8b98b0;line-height:1.4;flex:1;">批注→review_inline；日报→daily_report；通用对话仅 Boss 触发，不额外注入 Skill，仅靠人格底座驱动</div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:center;color:#2d3748;font-size:20px;flex-shrink:0;">→</div>
+
+      <div style="background:#141820;border:1px solid rgba(79,142,247,0.22);border-radius:12px;padding:7px 12px;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-shrink:0;">
+          <div style="font-size:18px;">📤</div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#93c5fd;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">④ 飞书输出</div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;">以老板身份交付结果</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#8b98b0;line-height:1.4;flex:1;">消息回复 / 文档批注（OAuth token 以老板身份写入）+ 每次调用同步生成 JSONL 审计记录</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="section" id="soul-memory">
+  <div class="section-label">数字分身 · 基础层</div>
+  <div class="section-title">Soul · Memory · 人格驱动系统</div>
+
+  <!-- MAIN: Soul 左 / Memory 右 -->
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;">
+
+    <!-- Soul -->
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:12px 18px;border-bottom:1px solid #1e2530;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+        <span style="font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;">Soul · 人格文件系统</span>
+        <span style="font-size:11px;color:#4a5568;">5 个维度 · 522 行</span>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+
+        <div style="flex:1;display:flex;align-items:stretch;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(168,139,250,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#a78bfa;">表达风格</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">结论优先，后说原因，最后给下一步动作</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">句子极短 · 无寒暄客套 · 重视明确动作而非建议</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:stretch;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(168,139,250,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#a78bfa;">决策方式</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">先判断目标是否清晰，再推进</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">关注能否快速产出 · 追问负责人 · 关注节点可执行性</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:stretch;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(168,139,250,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#a78bfa;">管理方式</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">要求「人 / 时间 / 结果」三件事说清楚</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">对延期和模糊表达反感 · 追进度时明确下一步责任人</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:stretch;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(168,139,250,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#a78bfa;">沟通方式</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">三套对象策略，自动感知切换</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">下属：直接可执行 · 管理层：结论+风险 · 客户：稳妥少承诺</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:stretch;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(168,139,250,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#a78bfa;">安全边界</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">不替老板做最终审批或人事安排</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">不承诺预算与资源 · 不编造飞书历史信息 · 不输出未授权敏感判断</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Memory -->
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:12px 18px;border-bottom:1px solid #1e2530;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+        <span style="font-size:10px;font-weight:700;color:#4ade80;letter-spacing:1px;text-transform:uppercase;">Memory · 业务上下文</span>
+        <span style="font-size:11px;color:#4a5568;">3 类文件 · 467 行</span>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+
+        <div style="flex:1;display:flex;align-items:stretch;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(74,222,128,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#4ade80;">术语表</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">公司内部术语 / 项目代号 / 客户名 / 产品名及常见缩写</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">glossary.md · 311 行 · Bot 回复时自动引用正确措辞</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:stretch;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(74,222,128,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#4ade80;">人员关系</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">关键人员职责与协作事实，帮助 Bot 正确理解「谁负责什么」</div>
+              <div style="margin-top:5px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.2);border-radius:5px;padding:2px 8px;">
+                <span style="font-size:11px;color:#FF9500;">仅老板可访问</span>
+              </div>
+              <div style="font-size:11px;color:#4a5568;margin-top:4px;">people-map.md · 52 行</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:stretch;min-height:0;">
+          <div style="flex-shrink:0;width:96px;padding:0 16px;display:flex;align-items:center;border-right:1px solid #1a2030;background:rgba(74,222,128,0.04);">
+            <span style="font-size:11px;font-weight:700;color:#4ade80;">项目事实</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <div>
+              <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">在跑项目的目标 / 当前状态 / 责任人 / 关键节点 / 风险</div>
+              <div style="font-size:11px;color:#4a5568;margin-top:2px;">projects.md · 日报和批注时自动匹配项目背景</div>
+              <div style="font-size:11px;color:#4ade80;margin-top:3px;">↑ 自动写入：预审完成后追加问题摘要 · Boss 发「关注：xxx」即时记录</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM: 蒸馏机制 + 注入流程 -->
+  <div style="flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+
+    <div style="background:rgba(168,139,250,0.04);border:1px solid rgba(168,139,250,0.15);border-radius:10px;padding:16px 18px;">
+      <div style="font-size:11px;font-weight:700;color:#a78bfa;margin-bottom:8px;">蒸馏机制 · 人格如何积累</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;color:#8b98b0;">飞书历史消息</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#8b98b0;">只提取老板发言</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#8b98b0;">LLM 提取规律</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#c4cdd8;font-weight:600;">hypothesis → supported</span>
+      </div>
+      <div style="margin-top:7px;font-size:11px;color:#4a5568;">dry-run 确认 → 正式写入 · 原始消息不持久化，只存 source_id</div>
+    </div>
+
+    <div style="background:rgba(79,142,247,0.04);border:1px solid rgba(79,142,247,0.15);border-radius:10px;padding:16px 18px;">
+      <div style="font-size:11px;font-weight:700;color:#4F8EF7;margin-bottom:8px;">每次请求的注入流程</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;background:rgba(168,139,250,0.1);border:1px solid rgba(168,139,250,0.2);border-radius:5px;padding:2px 8px;color:#a78bfa;">Soul × 5</span>
+        <span style="font-size:11px;color:#4a5568;">+</span>
+        <span style="font-size:12px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:5px;padding:2px 8px;color:#4ade80;">Memory × 3</span>
+        <span style="font-size:11px;color:#4a5568;">+</span>
+        <span style="font-size:12px;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:5px;padding:2px 8px;color:#4F8EF7;">Skill</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#8b98b0;">buildSystemPrompt()</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#c4cdd8;font-weight:600;">Claude 输出</span>
+      </div>
+      <div style="margin-top:7px;font-size:11px;color:#4a5568;">每次调用全量注入 Soul，Memory 按任务类型按需加载</div>
+    </div>
+
+  </div>
+
+  <!-- 管理沉淀闭环 -->
+  <div style="background:rgba(74,222,128,0.04);border:1px solid rgba(74,222,128,0.15);border-radius:10px;padding:16px 18px;margin-top:12px;">
+    <div style="font-size:11px;font-weight:700;color:#4ade80;margin-bottom:10px;">管理沉淀闭环 · Skill 执行后自动积累</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);border-radius:5px;padding:2px 8px;color:#4F8EF7;">文档预审完成</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#8b98b0;">自动提取问题类型 + 数量</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#4ade80;font-weight:600;">追加至 projects.md</span>
+        <span style="font-size:11px;color:#4a5568;margin-left:4px;">例：预审《周会》→ unclear_deadline×3, unclear_owner×1</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;background:rgba(255,149,0,0.1);border:1px solid rgba(255,149,0,0.2);border-radius:5px;padding:2px 8px;color:#FF9500;">Boss 发「关注：xxx」</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#8b98b0;">即时解析并存储</span>
+        <span style="font-size:11px;color:#4a5568;">→</span>
+        <span style="font-size:12px;color:#4ade80;font-weight:600;">追加至 projects.md</span>
+        <span style="font-size:11px;color:#4a5568;margin-left:4px;">下次任务自动读入作为上下文</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" id="skills">
+  <div class="section-label">Skill 体系</div>
+  <div class="section-title">Skill 能力设计与执行边界</div>
+  <p style="color:#8b98b0;font-size:14px;margin-bottom:28px;">
+    Skill 是在 Soul 人格基础上叠加的场景化提示词，解决「通用模型不知道老板要什么格式、什么信息密度、什么判断标准」的问题。
+    目前已激活 2 个 Skill。
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;">
+
+    <!-- daily_report -->
+    <div class="conclusion-card" style="border-color:#2a3448;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">📋</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;">日报 daily_report</div>
+          <div style="font-size:12px;color:#4F8EF7;margin-top:2px;">每工作日 10:00 自动触发，汇总昨日</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">数据来源</div>
+          <div style="font-size:13px;color:#8b98b0;line-height:1.7;">
+            · 151 个群聊（user token 逐群拉取当日消息）<br>
+            · 飞书妙记（user token 按时间窗自动扫描）
+          </div>
+        </div>
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">群分级策略</div>
+          <div style="font-size:13px;color:#8b98b0;line-height:1.7;">
+            · 一级（7个）：核心团队，低门槛纳入<br>
+            · 二级（60+）：业务群，仅实质内容<br>
+            · 三级：默认忽略，重大异常除外<br>
+            · 新群：按名称模式自动推断级别
+          </div>
+        </div>
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">AI 判断逻辑</div>
+          <div style="font-size:13px;color:#8b98b0;line-height:1.7;">
+            不是汇总，是判断。核心问题：今天不看，明天会不会出问题？
+          </div>
+        </div>
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">输出结构</div>
+          <div style="font-size:13px;color:#8b98b0;line-height:1.7;">
+            昨日动态（🔴🟡🟢 三级）<br>
+            → 需要特别注意（决策缺失/时间风险/无人接手）<br>
+            → 今日行动建议（今天必做 / 今天内跟进）
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- review_inline -->
+    <div class="conclusion-card" style="border-color:#2a3448;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">📝</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;">文档预审 review_inline</div>
+          <div style="font-size:12px;color:#34C759;margin-top:2px;">老板主动触发 · 写入前需确认</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">触发方式</div>
+          <div style="font-size:13px;color:#8b98b0;line-height:1.7;">
+            · 飞书文档链接 / 文档卡片转发<br>
+            · 说"帮我批注这个文档"<br>
+            · 仅老板或授权用户可触发
+          </div>
+        </div>
+        <div style="background:#0d1018;border-radius:8px;padding:10px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">核心能力分组</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;align-items:baseline;gap:8px;">
+              <span style="font-size:11px;font-weight:700;color:#4F8EF7;white-space:nowrap;min-width:52px;">读取理解</span>
+              <span style="font-size:12px;color:#8b98b0;">支持 8 种文档类型接入，自动判断类型并加载老板业务上下文</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;">
+              <span style="font-size:11px;font-weight:700;color:#34C759;white-space:nowrap;min-width:52px;">分析生成</span>
+              <span style="font-size:12px;color:#8b98b0;">识别 14 类业务问题，聚焦高优，提炼 ≤5 条批注草稿（不穷举）</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;">
+              <span style="font-size:11px;font-weight:700;color:#a78bfa;white-space:nowrap;min-width:52px;">写入管控</span>
+              <span style="font-size:12px;color:#8b98b0;">老板预览确认 → OAuth 身份写入飞书 → 权限校验 + 审计记录 + 反馈校准</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">批注流程</div>
+          <div style="font-size:12px;color:#8b98b0;white-space:nowrap;overflow:hidden;line-height:1.7;">
+            读文档 → 判类型 → 识别问题 → 生成 JSON 预览 → 老板确认 → 写入飞书评论区
+          </div>
+        </div>
+        <div style="background:#0d1018;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">评论风格约束</div>
+          <div style="font-size:13px;color:#8b98b0;line-height:1.7;">
+            1句话内 · 追问式 · 禁止"建议/否则"<br>
+            高优先 → 影响决策 / 推进阻塞 / 风险敞口
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="skilleval-dr">
+  <div class="section-label">效果评测 · 日报</div>
+  <div class="section-title">daily_report · 日报生成</div>
+
+  <!-- 方法卡 -->
+  <div style="background:#141820;border:1px solid #1e2530;border-radius:10px;padding:14px 20px;margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:700;color:#6b7a95;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">测试方法</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap;">
+      <div class="flow-node" style="padding:5px 14px;font-size:13px;">同一组模拟输入</div>
+      <span style="color:#2d3748;font-size:14px;">→</span>
+      <div class="flow-node highlight" style="padding:5px 14px;font-size:13px;">通用模型（无 Skill）</div>
+      <span style="color:#2d3748;font-size:14px;">vs</span>
+      <div class="flow-node green" style="padding:5px 14px;font-size:13px;">Soul + Skill</div>
+      <span style="color:#2d3748;font-size:14px;">→</span>
+      <div class="flow-node" style="padding:5px 14px;font-size:13px;">对比格式 / 口吻 / 关键信息 / 禁忌词</div>
+    </div>
+    <div style="font-size:12px;color:#4a5568;line-height:1.6;">对比法而非绝对评分：控制输入变量，隔离 Skill 对输出的净增量影响；模拟输入确保可复现性，排除真实数据量带来的测试不稳定性</div>
+  </div>
+
+  <!-- 效果对比表 -->
+  <div style="font-size:11px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">核心维度对比</div>
+  <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;margin-bottom:14px;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#0d1018;">
+          <th style="padding:8px 16px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;width:18%;">核心差异</th>
+          <th style="padding:8px 16px;text-align:left;color:#8b98b0;font-weight:700;font-size:11px;width:41%;">通用模型</th>
+          <th style="padding:8px 16px;text-align:left;color:#34C759;font-weight:700;font-size:11px;width:41%;">加入 Skill 后</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:10px 16px;color:#e2e8f0;font-weight:700;vertical-align:top;">格式一致性</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">每次结构不同，有时按群分组，有时按时间排列，无固定格式</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">固定三段式（昨日动态 → 需特别注意 → 今日行动），老板形成阅读预期</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:10px 16px;color:#e2e8f0;font-weight:700;vertical-align:top;">噪音过滤</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">倾向"全面"，把"收到""了解""早上好"等也纳入，字数普遍 800+</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">以「今天不看明天有没有麻烦」为过滤标准，高噪音场景仅输出 2 条有效信息</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:10px 16px;color:#e2e8f0;font-weight:700;vertical-align:top;">行动可执行度</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">建议停留在"持续关注""跟进推进"等泛化动词，无法直接执行</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">要求「动词 + 对象 + 目标 + 今天的原因」，如"催 Yuki 今天核对预算表漏项，6/17 截止"</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 分隔 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+    <div style="flex:1;height:1px;background:#1e2530;"></div>
+    <span style="font-size:11px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">评测结果（2026-06-16）</span>
+    <div style="flex:1;height:1px;background:#1e2530;"></div>
+  </div>
+
+  <!-- DR eval 表 -->
+  <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#0d1018;">
+          <th style="padding:8px 14px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;width:14%;">场景</th>
+          <th style="padding:8px 14px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;width:24%;">测试说明</th>
+          <th style="padding:8px 10px;text-align:center;color:#8b98b0;font-weight:700;font-size:11px;width:7%;">通用</th>
+          <th style="padding:8px 10px;text-align:center;color:#34C759;font-weight:700;font-size:11px;width:7%;">加入后</th>
+          <th style="padding:8px 14px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;">关键观察</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#4F8EF7;font-weight:700;">DR-01</span>
+            <span style="font-weight:600;margin-left:4px;">混合场景</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">紧急 + 跟踪 + 正向进展并存，验证三色分级和行动优先级</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">854</td>
+          <td style="padding:8px 10px;text-align:center;color:#34C759;">517</td>
+          <td style="padding:8px 14px;color:#8b98b0;">精简 40%，行动建议点名具体人和截止</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#34C759;font-weight:700;">DR-02</span>
+            <span style="font-weight:600;margin-left:4px;">无异常日</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">全是正向进展，验证需注意和今天必做区块是否正确省略</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">463</td>
+          <td style="padding:8px 10px;text-align:center;color:#34C759;">282</td>
+          <td style="padding:8px 14px;color:#8b98b0;">正确省略"需注意"和"今天必做"区块</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#FF9500;font-weight:700;">DR-03</span>
+            <span style="font-weight:600;margin-left:4px;">高噪音日</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">大量闲聊打卡，验证过滤能力，有效内容仅 2 条</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">331</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">332</td>
+          <td style="padding:8px 14px;color:#8b98b0;">字数相近；加入后多识别出销售承诺未对齐的隐性风险</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#FF6B6B;font-weight:700;">DR-04</span>
+            <span style="font-weight:600;margin-left:4px;">三级群异常</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">L3 群生产系统故障，验证重大异常突破默认忽略</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">314</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">305</td>
+          <td style="padding:8px 14px;color:#8b98b0;">加入后额外指出无复盘方案存在再发风险</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#FF6B6B;font-weight:700;">DR-05</span>
+            <span style="font-weight:600;margin-left:4px;">双紧急并存</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">决策悬空 + 时间风险同时出现，验证行动建议分别对应</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">651</td>
+          <td style="padding:8px 10px;text-align:center;color:#34C759;">480</td>
+          <td style="padding:8px 14px;color:#8b98b0;">通用模型输出 Markdown 表格；加入后两条 🔴 分别对应行动</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#8b5cf6;font-weight:700;">DR-06</span>
+            <span style="font-weight:600;margin-left:4px;">纯妙记场景</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">无群消息仅会议纪要，验证会议结论融入而非单独列块</td>
+          <td style="padding:8px 10px;text-align:center;color:#8b98b0;">429</td>
+          <td style="padding:8px 10px;text-align:center;color:#FF6B6B;">超时</td>
+          <td style="padding:8px 14px;color:#FF9500;">系统提示词 15K 字 + 120s 上限，已调整至 180s 待复测</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="section" id="skilleval-lr">
+  <div class="section-label">效果评测 · 批注</div>
+  <div class="section-title">review_inline · 文档批注</div>
+
+  <!-- 效果对比表 -->
+  <div style="font-size:11px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">核心维度对比</div>
+  <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;margin-bottom:14px;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#0d1018;">
+          <th style="padding:8px 16px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;width:18%;">核心差异</th>
+          <th style="padding:8px 16px;text-align:left;color:#8b98b0;font-weight:700;font-size:11px;width:41%;">通用模型</th>
+          <th style="padding:8px 16px;text-align:left;color:#34C759;font-weight:700;font-size:11px;width:41%;">加入 Skill 后</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:10px 16px;color:#e2e8f0;font-weight:700;vertical-align:top;">输出格式结构化</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">自由输出段落式意见，有时附表格，格式不固定，无法直接对接写入接口（0 / 6）</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">全部输出标准 JSON，可直接写入飞书（6 / 6）</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:10px 16px;color:#e2e8f0;font-weight:700;vertical-align:top;">评论口吻一致性</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">「建议补充…」「需要注意…」「否则…」等解释型措辞，像顾问不像老板（平均 1.7 个禁忌词）</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">追问式口吻（「谁来跟？」「时间计划是？」「没看懂～」），评论均长稳定（平均 0.2 个禁忌词）</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:10px 16px;color:#e2e8f0;font-weight:700;vertical-align:top;">批注数量克制</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">倾向穷举所有问题，输出 6–10 条，含大量低价值细节批注，老板容易产生抵触（数量不定）</td>
+          <td style="padding:10px 16px;color:#6b7a95;vertical-align:top;line-height:1.55;">6 个 case 全部输出恰好 5 条，优先选影响决策和推进的问题，低价值细节不过批（精确 5 条）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 分隔 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+    <div style="flex:1;height:1px;background:#1e2530;"></div>
+    <span style="font-size:11px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">评测结果（2026-06-17）</span>
+    <div style="flex:1;height:1px;background:#1e2530;"></div>
+  </div>
+
+  <!-- RI eval 表 -->
+  <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;margin-bottom:12px;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="background:#0d1018;">
+          <th style="padding:8px 14px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;width:14%;">场景</th>
+          <th style="padding:8px 14px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;width:28%;">测试说明</th>
+          <th style="padding:8px 14px;text-align:left;color:#6b7a95;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;">关键观察</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#4F8EF7;font-weight:700;">RI-01</span>
+            <span style="font-weight:600;margin-left:4px;">计划文档</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">时间节点过紧，全程无负责人，风险写「暂无」</td>
+          <td style="padding:8px 14px;color:#8b98b0;">通用模型输出 Markdown 分析；加入后直接追问缺失的人和日期</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#34C759;font-weight:700;">RI-02</span>
+            <span style="font-weight:600;margin-left:4px;">方案文档</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">目标停留在「提升体验」，无 ROI 数字，无竞品参照</td>
+          <td style="padding:8px 14px;color:#8b98b0;">通用模型出现「建议补充」；加入后「GMV 增长多少？投 3 人 3 个月要给数字」</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#FF9500;font-weight:700;">RI-03</span>
+            <span style="font-weight:600;margin-left:4px;">周报</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">下周计划全是「继续推进」「跟进」，无节点无验收</td>
+          <td style="padding:8px 14px;color:#8b98b0;">通用模型出现 2 个禁忌词；加入后聚焦 4 条无节点的下周计划</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#FF6B6B;font-weight:700;">RI-04</span>
+            <span style="font-weight:600;margin-left:4px;">复盘文档</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">根因写「系统压力过大」，改进措施无人无期</td>
+          <td style="padding:8px 14px;color:#8b98b0;">加入后批注最短（均 10 字）「压力为什么大？这不是根因～」</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#FF6B6B;font-weight:700;">RI-05</span>
+            <span style="font-weight:600;margin-left:4px;">需求说明</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">功能需求 4 条，无分类准确率要求，无验收标准</td>
+          <td style="padding:8px 14px;color:#8b98b0;">通用模型出现 3 个禁忌词；加入后「20 人天怎么算出来的～给个出处」</td>
+        </tr>
+        <tr style="border-top:1px solid #1a2030;">
+          <td style="padding:8px 14px;color:#e2e8f0;white-space:nowrap;vertical-align:middle;">
+            <span style="font-size:11px;color:#8b5cf6;font-weight:700;">RI-06</span>
+            <span style="font-weight:600;margin-left:4px;">会议纪要</span>
+          </td>
+          <td style="padding:8px 14px;color:#6b7a95;font-size:12px;vertical-align:middle;">4 条行动项全无责任人和截止日期</td>
+          <td style="padding:8px 14px;color:#8b98b0;">通用模型建议表格输出；加入后精确批注 4 条无人认领的行动项</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 测试数据说明 -->
+  <div style="background:rgba(255,149,0,0.04);border:1px solid rgba(255,149,0,0.2);border-radius:10px;padding:20px 24px;">
+    <div style="font-size:12px;font-weight:700;color:#FF9500;margin-bottom:12px;">测试数据尚为模拟 · 阶段二引入真实样本</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">
+      <div style="font-size:13px;color:#8b98b0;line-height:1.6;">
+        <strong style="color:#e2e8f0;">日报</strong>：151 个群 / 天数据量过大，当前以模拟消息验证输出格式与判断逻辑
+      </div>
+      <div style="font-size:13px;color:#8b98b0;line-height:1.6;">
+        <strong style="color:#e2e8f0;">批注</strong>：历史批注散落群聊和线下，无法结构化收集，当前以模拟文档验证分析路径与风格约束
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;font-size:12px;border-top:1px solid rgba(255,149,0,0.12);padding-top:10px;">
+      <span><span style="color:#34C759;font-weight:700;">✓ 已验证</span><span style="color:#6b7a95;margin-left:6px;">输出格式规范性 · 口吻一致性 · 批注数量克制</span></span>
+      <span><span style="color:#FF9500;font-weight:700;">→ 阶段二</span><span style="color:#6b7a95;margin-left:6px;">引入真实飞书文档，每类 10 篇，建立可复现的评测 ground truth</span></span>
+    </div>
+  </div>
+
+</div>
+
+
+
+<div class="section" id="arch">
+  <div class="section-label">架构权限</div>
+  <div class="section-title">三端架构 · 双层权限设计</div>
+
+  <!-- 比例容器：架构 auto / 中间行 auto / 权限 1fr -->
+  <div style="flex:1;min-height:0;display:grid;grid-template-rows:auto auto 1fr;gap:0;">
+
+    <!-- ① 三端架构：堆叠布局，space-between 撑满高度 -->
+    <div class="arch-flow" style="min-height:0;">
+
+      <div style="flex:1;padding:12px 18px;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;">
+        <div style="font-size:24px;line-height:1;">📱</div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4F8EF7;margin-bottom:4px;">端 A</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;">飞书客户端</div>
+        </div>
+        <div style="font-size:12px;color:#8b98b0;line-height:1.6;">
+          使用者：老板、员工白名单<br>
+          载体：飞书 App（手机 / 桌面）<br>
+          · 发消息 / 发文档链接<br>
+          · 查看 Bot 批注结果
+        </div>
+      </div>
+
+      <div style="flex:1;padding:12px 18px;border-left:1px solid #1e2530;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;">
+        <div style="font-size:24px;line-height:1;">☁️</div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4F8EF7;margin-bottom:4px;">端 B</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;">飞书开放平台</div>
+        </div>
+        <div style="font-size:12px;color:#8b98b0;line-height:1.6;">
+          使用者：系统自动<br>
+          载体：WebSocket 长连接（飞书云端）<br>
+          · 把用户消息转发给服务器<br>
+          · 把服务器回复传回给用户
+        </div>
+      </div>
+
+      <div style="flex:1;padding:12px 18px;border-left:1px solid #1e2530;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;">
+        <div style="font-size:24px;line-height:1;">🖥️</div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4F8EF7;margin-bottom:4px;">端 C</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;">自建服务器</div>
+        </div>
+        <div style="font-size:12px;color:#8b98b0;line-height:1.6;">
+          使用者：全自动运行，崩溃自动恢复<br>
+          载体：本地 Mac，Node.js<br>
+          · 全部业务逻辑<br>
+          · 调用 Claude AI / 飞书 API
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ② 服务链路 + 分隔线（auto，包在一行里） -->
+    <div style="padding:10px 0 8px;">
+      <div class="arch-chain" style="margin-bottom:10px;padding:10px 18px;font-size:12px;">
+        <span>用户发消息</span><span class="sep">→</span>
+        <span>飞书推 WebSocket 事件</span><span class="sep">→</span>
+        <span>服务器权限校验 + 任务路由</span><span class="sep">→</span>
+        <span>读文档 + Claude 分析</span><span class="sep">→</span>
+        <span>写批注 / 发回复</span><span class="sep">→</span>
+        <span>用户看到结果</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;height:1px;background:#1e2530;"></div>
+        <span style="font-size:10px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">双层权限体系</span>
+        <div style="flex:1;height:1px;background:#1e2530;"></div>
+      </div>
+    </div>
+
+    <!-- ③ 双层权限（3fr，flex-column 卡片，底部注释 margin-top:auto 贴底） -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0;padding-top:8px;padding-bottom:16px;">
+
+      <!-- 第一层: 飞书平台权限 -->
+      <div class="perm-card" style="overflow:hidden;display:flex;flex-direction:column;">
+        <div class="perm-card-head"><div class="dot"></div>第一层：飞书平台权限（控制 Bot 能调哪些 API）</div>
+        <div class="perm-sublabel" style="border-top:none;margin-top:0;padding:4px 20px;">应用级权限（Bot 本身）</div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">im:message</span><span class="perm-desc">读取群聊消息，用于日报收集</span></div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">contact</span><span class="perm-desc">解析用户姓名</span></div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">drive</span><span class="perm-desc">文档列表访问</span></div>
+        <div class="perm-sublabel" style="padding:4px 20px;">用户授权（老板本人 OAuth）</div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">im:chat</span><span class="perm-desc">获取老板所在群列表（日报）</span></div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">wiki</span><span class="perm-desc">解析飞书知识库文档链接</span></div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">docx:readonly</span><span class="perm-desc">读取文档正文内容（AI 分析用）</span></div>
+        <div class="perm-item" style="padding:5px 16px;"><span class="perm-scope">drive:write</span><span class="perm-desc">以老板身份在文档里写批注</span></div>
+        <!-- 注释贴卡底 -->
+        <div class="token-note" style="margin:auto 16px 14px;padding:10px 14px;font-size:11px;">⚠️ 读文档 + 写批注必须用老板本人授权的 token，不能用 Bot 应用的 token——批注在飞书中显示为老板本人发出。</div>
+      </div>
+
+      <!-- 第二层: 代码层权限 -->
+      <div class="perm-card" style="overflow:hidden;display:flex;flex-direction:column;">
+        <div class="perm-card-head"><div class="dot" style="background:#34C759"></div>第二层：代码层权限（控制谁能用什么功能）</div>
+        <table class="role-table">
+          <thead><tr><th>角色</th><th>判断方式</th><th>可用功能</th></tr></thead>
+          <tbody>
+            <tr class="boss-row">
+              <td style="padding:7px 10px;"><span class="role-badge badge-boss">Boss</span></td>
+              <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">open_id 固定值</td>
+              <td style="font-size:12px;padding:7px 10px;">全部功能（含数据蒸馏、Skill 生成）</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px;"><span class="role-badge badge-employee">员工</span></td>
+              <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">open_id 在白名单中</td>
+              <td style="font-size:12px;padding:7px 10px;">文档预审 + 通用对话</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px;"><span class="role-badge badge-other">其他人</span></td>
+              <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">不在任何列表</td>
+              <td style="font-size:12px;color:#4a5568;padding:7px 10px;">静默忽略，不回复不提示</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px;"><span class="role-badge badge-admin">Admin</span><span class="badge-deferred">暂缓</span></td>
+              <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">ADMIN_OPEN_IDS</td>
+              <td style="font-size:12px;color:#4a5568;padding:7px 10px;">管理配置（第二阶段）</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- 回复语境贴卡底 -->
+        <div style="padding:10px 16px;font-size:11px;color:#6b7a95;border-top:1px solid #1e2530;margin-top:auto;">
+          <strong style="color:#e2e8f0;">回复语境区分</strong><br>
+          老板发消息 → AI 收到"对话者是老板本人，直接简短"<br>
+          员工发消息 → AI 收到"对话者是员工，上级对下属沟通风格"<br>
+          <span style="color:#4a5568;font-size:10px;">同一个 Bot，同一套人格，根据发送者动态调整语境</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="section" id="agent-arch">
+  <div class="section-label">系统调度</div>
+  <div class="section-title">AI 调用与请求处理流程</div>
+  <div class="flow-wrap">
+
+    <!-- 主流程 Row 1 -->
+    <div class="flow-row">
+      <div class="flow-col">
+        <div class="flow-node highlight">① 接收 WebSocket 事件</div>
+        <div class="flow-desc">飞书 SDK 长连接监听</div>
+      </div>
+      <div class="flow-arrow-h">→</div>
+      <div class="flow-col">
+        <div class="flow-node">② 消息去重</div>
+        <div class="flow-desc">同一消息ID只处理一次</div>
+      </div>
+      <div class="flow-arrow-h">→</div>
+      <div class="flow-col">
+        <div class="flow-node">③ 权限校验</div>
+        <div class="flow-desc">白名单检查，非授权丢弃</div>
+      </div>
+      <div class="flow-arrow-h">→</div>
+      <div class="flow-col">
+        <div class="flow-node">④ 任务类型识别</div>
+        <div class="flow-desc">正则匹配意图</div>
+      </div>
+    </div>
+
+    <!-- 箭头向下 -->
+    <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
+
+    <!-- 分支说明 -->
+    <div style="display:flex;justify-content:center;gap:60px;margin-bottom:4px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4F8EF7;text-align:center;">文档预审</div>
+      <div style="text-align:center;"><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#34C759;display:inline;">通用对话</div><div style="font-size:9px;color:#FF9500;font-weight:700;margin-top:1px;">Boss only</div></div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#FF9500;text-align:center;">日报（10:00·昨日汇总）</div>
+    </div>
+
+    <!-- 分叉线 -->
+    <div style="position:relative;height:28px;margin:0 60px;">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:#2d3748;"></div>
+      <div style="position:absolute;top:0;left:16%;width:1px;height:100%;background:#2d3748;"></div>
+      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:100%;background:#2d3748;"></div>
+      <div style="position:absolute;top:0;right:16%;width:1px;height:100%;background:#2d3748;"></div>
+    </div>
+
+    <!-- 三条分支 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:0;">
+
+      <!-- 文档预审分支 -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node highlight" style="width:100%;text-align:center;">⑤ 读取飞书文档</div>
+          <div class="flow-desc">用老板 OAuth token</div>
+        </div>
+        <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node highlight" style="width:100%;text-align:center;">⑥ 调用 Claude AI</div>
+          <div class="flow-desc">注入 Soul + Skill 指令，最多重试3次</div>
+        </div>
+        <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node highlight" style="width:100%;text-align:center;">⑦ 写入飞书批注</div>
+          <div class="flow-desc">以老板身份逐条写入</div>
+        </div>
+      </div>
+
+      <!-- 通用对话分支 -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node green" style="width:100%;text-align:center;">⑧ Soul + Memory 注入</div>
+          <div class="flow-desc">989行人格 + 467行记忆</div>
+        </div>
+        <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node green" style="width:100%;text-align:center;">⑨ 调用 Claude AI</div>
+          <div class="flow-desc">基于老板语境生成回复</div>
+        </div>
+      </div>
+
+      <!-- 日报分支 -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node orange" style="width:100%;text-align:center;">⑩ 拉取全部群消息</div>
+          <div class="flow-desc">老板所在所有工作群</div>
+        </div>
+        <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
+        <div class="flow-col" style="width:100%;">
+          <div class="flow-node orange" style="width:100%;text-align:center;">⑪ AI 筛选 + 生成日报</div>
+          <div class="flow-desc">过滤闲聊，保留进展/风险</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 合并线 -->
+    <div style="position:relative;height:28px;margin:0 60px;">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2d3748;"></div>
+      <div style="position:absolute;bottom:0;left:16%;width:1px;height:100%;background:#2d3748;"></div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:1px;height:100%;background:#2d3748;"></div>
+      <div style="position:absolute;bottom:0;right:16%;width:1px;height:100%;background:#2d3748;"></div>
+    </div>
+    <div style="color:#2d3748;font-size:14px;text-align:center;">↓</div>
+
+    <!-- 结果 -->
+    <div style="display:flex;justify-content:center;margin-top:4px;">
+      <div class="flow-col">
+        <div class="flow-node" style="background:#1a2a1a;border-color:#34C759;color:#34C759;min-width:160px;text-align:center;">⑫ 分片发送结果</div>
+        <div class="flow-desc">超3800字自动分段推送</div>
+      </div>
+    </div>
+
+    <!-- 常驻模块 -->
+    <div class="flow-always">
+      <span class="flow-always-label">常驻</span>
+      <div class="flow-node dim" style="font-size:12px;">⚡ 异常兜底<br><span style="font-size:10px;color:#4a5568;">报错发提示给用户</span></div>
+      <div class="flow-node dim" style="font-size:12px;">🛡 崩溃自动恢复<br><span style="font-size:10px;color:#4a5568;">异常退出后3秒内自动重启</span></div>
+    </div>
+
+    <div class="flow-legend">
+      <div class="flow-legend-item"><div class="flow-legend-dot" style="background:rgba(79,142,247,0.4);border:1px solid #4F8EF7;"></div>文档预审流程</div>
+      <div class="flow-legend-item"><div class="flow-legend-dot" style="background:rgba(52,199,89,0.3);border:1px solid #34C759;"></div>通用对话流程</div>
+      <div class="flow-legend-item"><div class="flow-legend-dot" style="background:rgba(255,149,0,0.3);border:1px solid #FF9500;"></div>日报调度流程</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="perm">
+  <div class="section-label">阶段总结</div>
+  <div class="section-title">Bot 设计 · 结构验证 · 演进方向</div>
+
+  <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding-bottom:20px;">
+
+    <!-- 上半：A + B；父 grid 两列两行，A/B 各自 span 两行并用 subgrid 继承行高 -->
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:12px;">
+
+      <!-- A 整体容器：span row 1-2，内部用 subgrid 继承两行定义 -->
+      <div style="grid-column:1;grid-row:1/3;background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:grid;grid-template-rows:subgrid;">
+
+        <!-- A 内容区（row 1） -->
+        <div style="padding:16px 18px;display:flex;flex-direction:column;">
+          <div style="font-size:10px;font-weight:700;color:#4F8EF7;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;">A · Bot 能力设计</div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;flex-shrink:0;">
+            <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;display:flex;gap:10px;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#4F8EF7;white-space:nowrap;">通用对话</span>
+              <span style="font-size:12px;color:#6b7a95;">Boss 随时发起临时问题，Soul 人格驱动即时回复；非 Boss 消息静默</span>
+            </div>
+            <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;display:flex;gap:10px;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#34C759;white-space:nowrap;">文档批注</span>
+              <span style="font-size:12px;color:#6b7a95;">读取飞书文档，AI 分析后以老板身份写入 5 条精准批注</span>
+            </div>
+            <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;display:flex;gap:10px;align-items:center;">
+              <span style="font-size:11px;font-weight:700;color:#FF9500;white-space:nowrap;">日报调度</span>
+              <span style="font-size:12px;color:#6b7a95;">每工作日 10:00 拉取昨日群消息，AI 筛选进展 / 风险推送日报</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;">
+            <span style="color:#a78bfa;font-weight:700;">Boss</span><span style="color:#6b7a95;">全部功能（含蒸馏 / Skill 生成）</span>
+            <span style="color:#34C759;font-weight:700;">员工</span><span style="color:#6b7a95;">文档批注</span>
+          </div>
+        </div>
+
+        <!-- A 产品决策卡（row 2，与 B row 2 同高） -->
+        <div style="background:rgba(79,142,247,0.06);border-top:1px solid rgba(79,142,247,0.18);padding:12px 18px;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:11px;font-weight:700;color:#4F8EF7;margin-bottom:3px;">产品决策 · 一个 Bot 覆盖两角色</div>
+          <div style="font-size:12px;color:#6b7a95;line-height:1.5;">老板与员工共用同一 Bot，功能隔离在代码层完成。拆分成多 Bot 的运维成本（双 App ID + 双 OAuth + 双 WebSocket）远大于隔离收益。</div>
+        </div>
+      </div>
+
+      <!-- B 整体容器：span row 1-2，内部用 subgrid 继承两行定义 -->
+      <div style="grid-column:2;grid-row:1/3;background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:grid;grid-template-rows:subgrid;">
+
+        <!-- B 内容区（row 1） -->
+        <div style="padding:16px 18px;display:flex;flex-direction:column;">
+          <div style="font-size:10px;font-weight:700;color:#34C759;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;">B · 三端通信与双层权限验证</div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;flex-shrink:0;">
+            <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;">
+              <span style="color:#34C759;font-weight:700;white-space:nowrap;">✅ 三端通信</span>
+              <span style="color:#6b7a95;">飞书客户端 → 飞书开放平台（WebSocket）→ 自建服务器，全链路稳定</span>
+            </div>
+            <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;">
+              <span style="color:#34C759;font-weight:700;white-space:nowrap;">✅ 双层权限</span>
+              <span style="color:#6b7a95;">飞书平台应用权限 + 代码层角色判断，两层独立、互不依赖</span>
+            </div>
+            <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;">
+              <span style="color:#34C759;font-weight:700;white-space:nowrap;">✅ 服务自愈</span>
+              <span style="color:#6b7a95;">崩溃 3 秒内自动重启，异常兜底通知，可作生产级长驻服务</span>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:#4a5568;line-height:1.6;">所需飞书权限：<span style="color:#6b7a95;">im:message · contact · drive · im:chat · wiki · docx:readonly · drive:write（老板 OAuth）</span></div>
+        </div>
+
+        <!-- B 产品决策卡（row 2，与 A row 2 同高） -->
+        <div style="background:rgba(255,149,0,0.05);border-top:1px solid rgba(255,149,0,0.18);padding:12px 18px;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:11px;font-weight:700;color:#FF9500;margin-bottom:5px;">产品决策 · 不设 Agent 自助配置入口</div>
+          <div style="font-size:12px;color:#6b7a95;line-height:1.6;">
+            <span style="color:#e2e8f0;font-weight:600;">意图歧义</span>——自然语言改配置易误改关键规则<br>
+            <span style="color:#e2e8f0;font-weight:600;">富文本风险</span>——AI 代写 Markdown 一次误操作影响所有用户<br>
+            <span style="color:#e2e8f0;font-weight:600;">无对比 Review</span>——聊天界面看不到改动前后差异
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 下半：C 下一步两个方向 -->
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="font-size:10px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;">C · 下一步两个方向</div>
+      <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <!-- 路径 A -->
+        <div style="background:rgba(79,142,247,0.05);border:1px solid rgba(79,142,247,0.22);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="font-size:12px;font-weight:700;color:#4F8EF7;margin-bottom:12px;flex-shrink:0;">Skill 深化 · 扩充覆盖场景</div>
+          <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:hidden;">
+
+            <div style="flex:1;background:rgba(79,142,247,0.05);border:1px solid rgba(79,142,247,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
+              <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">引入真实测试数据</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">替换手写模拟数据，从真实飞书文档建立测试集；每类文档 10 篇，形成可复现的 eval ground truth，同步引入模型横向对比</div>
+            </div>
+
+            <div style="flex:1;background:rgba(79,142,247,0.05);border:1px solid rgba(79,142,247,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
+              <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">细化现有 Skill 能力</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">基于真实 eval 数据迭代日报与批注 Skill 的提示词、评分维度和兜底逻辑，持续提升与老板风格的贴合度</div>
+            </div>
+
+            <div style="flex:1;background:rgba(79,142,247,0.05);border:1px solid rgba(79,142,247,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
+              <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">扩充 Skill 方向</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">向周报批注 / 方案文档 / 复盘报告 / 会议纪要扩展；每类建立独立 Skill 文件与配套 eval 套件</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 路径 B -->
+        <div style="background:rgba(168,139,250,0.05);border:1px solid rgba(168,139,250,0.22);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:12px;flex-shrink:0;">框架选型 · 积累数据后评估</div>
+          <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:hidden;">
+
+            <div style="flex:1;background:rgba(168,139,250,0.04);border:1px solid rgba(168,139,250,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
+              <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">现阶段结论</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">三端通信、双层权限、服务自愈已完成验证。当前架构能力天花板已明确：无多步规划、无自动记忆、无多 Agent 并行</div>
+            </div>
+
+            <div style="flex:1;background:rgba(168,139,250,0.04);border:1px solid rgba(168,139,250,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
+              <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">评估前置条件</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">路径 A 完成后，积累足够真实 eval 数据，明确当前方案在哪些场景下已触达天花板，再启动框架选型评估</div>
+            </div>
+
+            <div style="flex:1;background:rgba(168,139,250,0.04);border:1px solid rgba(168,139,250,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
+              <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">框架能力全维度对比</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">当前方案与成熟框架的优劣势、运维局限、迁移策略的详细对比分析 <span onclick="document.querySelector('#top-nav-items [data-idx=\'9\']').click()" style="color:#a78bfa;font-weight:600;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(168,139,250,0.4);text-underline-offset:2px;">→ 见附录</span></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+<div class="section" id="framework-gap">
+  <div class="section-label">附录</div>
+  <div class="section-title">当前方案 vs 成熟框架 · 能力全对比</div>
+
+  <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;padding-bottom:36px;">
+
+  <!-- A · 当前方案评估 -->
+  <div style="flex-shrink:0;">
+    <div style="font-size:10px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">A · 当前方案评估</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+    <!-- 优势 -->
+    <div style="background:rgba(52,199,89,0.06);border:1px solid rgba(52,199,89,0.25);border-radius:10px;padding:12px 16px;">
+      <div style="font-size:10px;font-weight:700;color:#34C759;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px;">当前方案优势</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;">
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#34C759;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">零 AI 成本</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">调用本机 Claude Code，不按 Token 计费</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#34C759;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">数据不出内网</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">飞书内容本地处理，无第三方云上传</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#34C759;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">部署简单</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">单 Node.js 进程，无容器化依赖</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#34C759;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">产品团队可迭代</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">改 Markdown 即调整 AI 行为，无需开发介入</span>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;display:flex;gap:6px;align-items:baseline;margin-top:4px;padding-top:7px;border-top:1px solid rgba(52,199,89,0.15);">
+          <span style="font-size:11px;color:#34C759;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">差异化积累可迁移</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">Soul 精细度与飞书深度集成是独有投入，框架升级时两项均可完整保留</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 当前架构局限 -->
+    <div style="background:rgba(255,149,0,0.06);border:1px solid rgba(255,149,0,0.25);border-radius:10px;padding:12px 16px;">
+      <div style="font-size:10px;font-weight:700;color:#FF9500;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px;">当前架构局限</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;">
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#FF9500;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">依赖本地 Mac</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">休眠 / 断电中断</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#FF9500;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">OAuth Token</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">约 30 天需更新</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#FF9500;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">白名单需重启</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">新增员工 2–3 秒中断</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:baseline;">
+          <span style="font-size:11px;color:#FF9500;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">日报静默失败</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">网络故障无告警</span>
+          </div>
+        </div>
+        <!-- 架构边界：全宽独占一行 -->
+        <div style="grid-column:1/-1;display:flex;gap:6px;align-items:baseline;margin-top:4px;padding-top:7px;border-top:1px solid rgba(255,149,0,0.15);">
+          <span style="font-size:11px;color:#FF9500;flex-shrink:0;">·</span>
+          <div>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">架构边界</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">Skill 体系本质是 Markdown 注入 prompt，无 schema 校验、无 registry、无结构化输出保障——框架升级前的已知技术债</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- B · 能力维度对比 -->
+  <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
+    <div style="font-size:10px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;flex-shrink:0;">B · 能力维度对比</div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative;">
+
+    <!-- 当前方案 -->
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:11px 16px;border-bottom:1px solid rgba(167,139,250,0.2);flex-shrink:0;background:rgba(167,139,250,0.08);">
+        <span style="font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;">当前方案 · Claude Code CLI</span>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">Skill 形式</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">Markdown 文件注入 prompt，无正式 registry，无 schema 校验</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">工具调用</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">靠提示词让模型输出 JSON，手写解析 + 重试逻辑，格式稳定性依赖 prompt</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">记忆管理</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">每次请求手动注入 Soul + Memory 文件，人工维护内容，不自动更新</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">模型绑定</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">强依赖 Claude，切换模型需重写整个调用层</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">部署依赖</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">必须在安装了 Claude Code 的机器上运行，无法容器化</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;background:rgba(52,199,89,0.03);">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#34C759;">✅ 成本</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">调用本机 CLI 不计费，AI 使用成本为零</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;min-height:0;background:rgba(52,199,89,0.03);">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#34C759;">✅ 迭代</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">修改 Markdown 即可调整 AI 行为，产品团队可直接操作</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 成熟框架 -->
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:11px 16px;border-bottom:1px solid rgba(74,222,128,0.2);flex-shrink:0;background:rgba(74,222,128,0.08);">
+        <span style="font-size:10px;font-weight:700;color:#4ade80;letter-spacing:1px;text-transform:uppercase;">成熟框架 · LangChain / Hermes 类</span>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">Skill 形式</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">标准 Tool / Function 定义，带 schema 校验，registry 统一管理</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">工具调用</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">原生 Function Calling，结构化输出有 schema 保障，无需手写解析</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">记忆管理</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">内置向量数据库 / 会话管理，对话内容自动检索写入，持续学习</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">多模型支持</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">可同时使用多个模型，按任务类型动态选择最合适的模型</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#6b7a95;">部署灵活</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">独立服务，可容器化部署到任意云，不绑定特定机器</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;border-bottom:1px solid #1a2030;min-height:0;background:rgba(255,149,0,0.03);">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#FF9500;">⚠️ 成本</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">按 Token 计费，高频使用时成本随用量线性增长</span>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;gap:0;min-height:0;background:rgba(255,149,0,0.03);">
+          <div style="flex-shrink:0;width:88px;padding:0 14px;display:flex;align-items:center;border-right:1px solid #1a2030;">
+            <span style="font-size:11px;font-weight:700;color:#FF9500;">⚠️ 迭代</span>
+          </div>
+          <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">修改 Tool 定义需写代码，技术门槛高于 Markdown 方式</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VS 徽章：absolute，不占 grid flow -->
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;width:26px;height:26px;border-radius:50%;background:#0a0d12;border:1px solid #2a3040;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#4a5568;letter-spacing:0.5px;">VS</div>
+    </div>
+  </div>
+
+  </div><!-- /outer flex container -->
+
+</div>
+
+
+
+<script>
+(function() {
+  var container = document.getElementById('fp-container');
+  var hero = container.querySelector('.hero');
+  var sections = Array.from(container.querySelectorAll('.section[id]'));
+  var slides = [hero].concat(sections);
+  var navItems = Array.from(document.querySelectorAll('#top-nav-items .nav-item'));
+
+  navItems.forEach(function(item, i) {
+    item.addEventListener('click', function() {
+      if (slides[i]) slides[i].scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.intersectionRatio >= 0.4) {
+        var idx = slides.indexOf(entry.target);
+        if (idx >= 0) {
+          navItems.forEach(function(d) { d.classList.remove('active'); });
+          if (navItems[idx]) navItems[idx].classList.add('active');
+        }
+      }
+    });
+  }, { root: container, threshold: 0.4 });
+
+  slides.forEach(function(s) { if (s) observer.observe(s); });
+})();
+
+// ── 自适应缩放：1440×900 为基准，宽高同时约束，section 高度随之修正 ────────
+(function() {
+  var BASE_W = 1440, BASE_H = 900;
+  function fitSlides() {
+    var scale = Math.min(
+      window.innerWidth  / BASE_W,
+      window.innerHeight / BASE_H,
+      1
+    );
+    document.body.style.zoom = scale;
+    // 100vh 始终等于真实视口高度，乘以 zoom 后视觉高度 < 视口，需要补偿
+    // 设 section height = 真实视口 / scale，使视觉高度恰好等于真实视口
+    var h = Math.ceil(window.innerHeight / scale);
+    document.querySelectorAll('.section').forEach(function(s) {
+      s.style.height = h + 'px';
+    });
+  }
+  fitSlides();
+  window.addEventListener('resize', fitSlides);
+})();
+</script>
+</body>
+</html>
