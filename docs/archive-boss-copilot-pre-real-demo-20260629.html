@@ -537,11 +537,10 @@ footer {
     <button class="nav-item" data-idx="3"><span class="nav-num">04</span>Skill 体系</button>
     <button class="nav-item" data-idx="4"><span class="nav-num">05</span>评测 · 日报</button>
     <button class="nav-item" data-idx="5"><span class="nav-num">06</span>评测 · 批注</button>
-    <button class="nav-item" data-idx="6"><span class="nav-num">07</span>真实 Demo</button>
-    <button class="nav-item" data-idx="8"><span class="nav-num">08</span>架构权限</button>
-    <button class="nav-item" data-idx="9"><span class="nav-num">09</span>系统调度</button>
-    <button class="nav-item" data-idx="10"><span class="nav-num">10</span>演进规划</button>
-    <button class="nav-item" data-idx="11"><span class="nav-num">11</span>附录</button>
+    <button class="nav-item" data-idx="6"><span class="nav-num">07</span>架构权限</button>
+    <button class="nav-item" data-idx="7"><span class="nav-num">08</span>系统调度</button>
+    <button class="nav-item" data-idx="8"><span class="nav-num">09</span>演进规划</button>
+    <button class="nav-item" data-idx="9"><span class="nav-num">10</span>附录</button>
   </nav>
 </header>
 
@@ -853,7 +852,7 @@ footer {
             <div>
               <div style="font-size:12px;color:#c4cdd8;line-height:1.6;">在跑项目的目标 / 当前状态 / 责任人 / 关键节点 / 风险</div>
               <div style="font-size:11px;color:#4a5568;margin-top:2px;">projects.md · 日报和批注时自动匹配项目背景</div>
-              <div style="font-size:11px;color:#4ade80;margin-top:3px;">↑ 受控写入：预审摘要进入候选队列 · 按风险由 Admin / Boss 确认</div>
+              <div style="font-size:11px;color:#4ade80;margin-top:3px;">↑ 自动写入：预审完成后追加问题摘要 · Boss 发「关注：xxx」即时记录</div>
             </div>
           </div>
         </div>
@@ -877,7 +876,7 @@ footer {
         <span style="font-size:11px;color:#4a5568;">→</span>
         <span style="font-size:12px;color:#c4cdd8;font-weight:600;">hypothesis → supported</span>
       </div>
-      <div style="margin-top:7px;font-size:11px;color:#4a5568;">范围确认 → 候选 + 证据预览 → Admin 写 Demo / Boss 发正式版 → 原子写入 + 审计</div>
+      <div style="margin-top:7px;font-size:11px;color:#4a5568;">dry-run 确认 → 正式写入 · 原始消息不持久化，只存 source_id</div>
     </div>
 
     <div style="background:rgba(79,142,247,0.04);border:1px solid rgba(79,142,247,0.15);border-radius:10px;padding:16px 18px;">
@@ -891,23 +890,23 @@ footer {
         <span style="font-size:11px;color:#4a5568;">→</span>
         <span style="font-size:12px;color:#8b98b0;">buildSystemPrompt()</span>
         <span style="font-size:11px;color:#4a5568;">→</span>
-        <span style="font-size:12px;color:#c4cdd8;font-weight:600;">LLM 输出</span>
+        <span style="font-size:12px;color:#c4cdd8;font-weight:600;">Claude 输出</span>
       </div>
-      <div style="margin-top:7px;font-size:11px;color:#4a5568;">Boss 使用完整 Soul；员工预审只注入批准的老板审阅画像与公共术语</div>
+      <div style="margin-top:7px;font-size:11px;color:#4a5568;">每次调用全量注入 Soul，Memory 按任务类型按需加载</div>
     </div>
 
   </div>
 
   <!-- 管理沉淀闭环 -->
   <div style="background:rgba(74,222,128,0.04);border:1px solid rgba(74,222,128,0.15);border-radius:10px;padding:16px 18px;margin-top:12px;">
-    <div style="font-size:11px;font-weight:700;color:#4ade80;margin-bottom:10px;">管理沉淀闭环 · Skill 执行后受控积累</div>
+    <div style="font-size:11px;font-weight:700;color:#4ade80;margin-bottom:10px;">管理沉淀闭环 · Skill 执行后自动积累</div>
     <div style="display:flex;flex-direction:column;gap:7px;">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:12px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);border-radius:5px;padding:2px 8px;color:#4F8EF7;">文档预审完成</span>
         <span style="font-size:11px;color:#4a5568;">→</span>
         <span style="font-size:12px;color:#8b98b0;">自动提取问题类型 + 数量</span>
         <span style="font-size:11px;color:#4a5568;">→</span>
-        <span style="font-size:12px;color:#4ade80;font-weight:600;">进入 Memory 候选队列</span>
+        <span style="font-size:12px;color:#4ade80;font-weight:600;">追加至 projects.md</span>
         <span style="font-size:11px;color:#4a5568;margin-left:4px;">例：预审《周会》→ unclear_deadline×3, unclear_owner×1</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -1289,101 +1288,11 @@ footer {
 
 </div>
 
-<!-- 真实 Demo：日报生成 -->
-<div class="section" id="demo-daily-report" data-nav-group="real-demo">
-  <div class="section-label">真实测试 · Demo 01</div>
-  <div class="section-title">daily_report · 从飞书消息到老板日报</div>
-  <p style="color:#8b98b0;font-size:13px;margin-bottom:12px;">真实飞书 Demo 截图 · 6 月 26 日早晨生成，汇总 6 月 25 日群聊信息并收敛为风险与行动。</p>
-
-  <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:13px;display:flex;flex-direction:column;min-height:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
-        <span style="font-size:12px;font-weight:700;color:#4F8EF7;">① 昨日动态 · 风险分级</span>
-        <span style="font-size:10px;color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:2px 8px;">真实截图</span>
-      </div>
-      <div data-demo-crop="daily-top" style="position:relative;flex:1;min-height:0;overflow:hidden;border-radius:9px;background:#f7f8fa;border:1px solid #263044;">
-        <img src="assets/demo/daily-report-2026-06-26.png" alt="6月26日老板日报上半部分：昨日动态与风险分级" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;">
-        <div style="position:absolute;right:10px;top:10px;background:rgba(10,13,18,.9);border:1px solid rgba(255,107,107,.55);border-radius:8px;padding:7px 10px;color:#fff;font-size:11px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.28);">风险分级：2 红 / 2 黄 / 1 绿</div>
-      </div>
-    </div>
-
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:13px;display:flex;flex-direction:column;min-height:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
-        <span style="font-size:12px;font-weight:700;color:#34C759;">② 特别关注 · 今日行动</span>
-        <span style="font-size:10px;color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:2px 8px;">真实截图</span>
-      </div>
-      <div data-demo-crop="daily-bottom" style="position:relative;flex:1;min-height:0;overflow:hidden;border-radius:9px;background:#f7f8fa;border:1px solid #263044;">
-        <img src="assets/demo/daily-report-2026-06-26.png" alt="6月26日老板日报下半部分：特别关注与今日行动" style="position:absolute;left:0;bottom:0;width:100%;height:auto;display:block;">
-        <div style="position:absolute;right:10px;top:10px;background:rgba(10,13,18,.9);border:1px solid rgba(79,142,247,.55);border-radius:8px;padding:7px 10px;color:#fff;font-size:11px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.28);">从群聊信息收敛到老板待决策事项</div>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:11px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-    <div style="background:rgba(255,107,107,.05);border:1px solid rgba(255,107,107,.2);border-radius:9px;padding:9px 12px;"><div style="font-size:10px;color:#FF6B6B;font-weight:700;margin-bottom:3px;">先看风险</div><div style="font-size:11px;color:#8b98b0;line-height:1.45;">红黄绿让老板一眼识别决策缺口、时间风险和正常进展。</div></div>
-    <div style="background:rgba(79,142,247,.05);border:1px solid rgba(79,142,247,.2);border-radius:9px;padding:9px 12px;"><div style="font-size:10px;color:#4F8EF7;font-weight:700;margin-bottom:3px;">再做收敛</div><div style="font-size:11px;color:#8b98b0;line-height:1.45;">从 15 个活跃群中提炼特别关注，不把聊天流水账直接上报。</div></div>
-    <div style="background:rgba(52,199,89,.05);border:1px solid rgba(52,199,89,.2);border-radius:9px;padding:9px 12px;"><div style="font-size:10px;color:#34C759;font-weight:700;margin-bottom:3px;">落到行动</div><div style="font-size:11px;color:#8b98b0;line-height:1.45;">输出继续转成“今天必做 / 今天内跟进”，可直接执行。</div></div>
-  </div>
-
-  <div style="margin-top:9px;display:flex;gap:18px;align-items:center;font-size:11px;color:#6b7a95;">
-    <span><b style="color:#34C759;">✓ 真实链路</b> · 历史消息读取 → Skill 生成 → 飞书卡片发送</span>
-    <span><b style="color:#e2e8f0;">15 个活跃群</b> · L1 2 / L2 10 / L3 3</span>
-    <span><b style="color:#FF9500;">数据边界</b> · 本次妙记未纳入</span>
-  </div>
-</div>
-
-<!-- 真实 Demo：文档预审 -->
-<div class="section" id="demo-inline-review" data-nav-group="real-demo">
-  <div class="section-label">真实测试 · Demo 02</div>
-  <div class="section-title">review_inline · 人工确认后写入飞书批注</div>
-  <p style="color:#8b98b0;font-size:13px;margin-bottom:14px;">完整保留“发起—预览—确认—写入”闭环，避免 AI 未经授权直接修改文档。</p>
-
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:11px;padding:12px;"><div style="font-size:10px;color:#4F8EF7;font-weight:700;margin-bottom:7px;">01 · 发送文档</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">员工发送飞书文档链接<br><span style="color:#c4cdd8;">“自动批注”</span></div></div>
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:11px;padding:12px;"><div style="font-size:10px;color:#4F8EF7;font-weight:700;margin-bottom:7px;">02 · 生成预览</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">Bot 读取并识别关键问题<br><span style="color:#c4cdd8;">最多 5 条</span></div></div>
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:11px;padding:12px;"><div style="font-size:10px;color:#FF9500;font-weight:700;margin-bottom:7px;">03 · 人工确认</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">仅最初发起人可回复<br><span style="color:#c4cdd8;">“确认”或“取消”</span></div></div>
-    <div style="background:#141820;border:1px solid rgba(52,199,89,.35);border-radius:11px;padding:12px;"><div style="font-size:10px;color:#34C759;font-weight:700;margin-bottom:7px;">04 · 写入文档</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">逐条写入对应段落<br><span style="color:#34C759;">✓ 返回成功状态</span></div></div>
-  </div>
-
-  <div style="flex:1;min-height:0;display:grid;grid-template-columns:.78fr 1.45fr;gap:16px;">
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:16px;display:flex;flex-direction:column;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="font-size:12px;font-weight:700;color:#4F8EF7;">确认对话</span><span style="font-size:10px;color:#FF9500;">示例占位</span></div>
-      <div style="background:#0d1018;border-radius:10px;padding:14px;flex:1;font-size:11px;line-height:1.6;color:#8b98b0;">
-        <div style="background:#1b2230;border-radius:8px;padding:10px;margin-bottom:10px;color:#c4cdd8;">已识别 5 个关键问题：目标不清、负责人缺失、时间节点不完整……</div>
-        <div style="background:rgba(79,142,247,.14);border-radius:8px;padding:10px;margin:0 0 10px 35px;color:#9fc1ff;">确认</div>
-        <div style="background:#1b2230;border-radius:8px;padding:10px;color:#34C759;">✅ 已写入 5 条文档批注</div>
-      </div>
-    </div>
-
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:16px;display:flex;flex-direction:column;min-height:0;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="font-size:12px;font-weight:700;color:#34C759;">飞书文档批注结果</span><span style="font-size:10px;color:#FF9500;">示例占位</span></div>
-      <div style="background:#f7f8fa;border-radius:10px;padding:17px 20px;color:#202632;flex:1;position:relative;overflow:hidden;">
-        <div style="font-size:15px;font-weight:800;margin-bottom:12px;">Q3 项目推进方案</div>
-        <div style="width:61%;font-size:11px;color:#657083;line-height:1.8;">
-          <b style="color:#2d3440;">项目目标</b><br>通过流程升级提升团队协作效率。<br><br>
-          <b style="color:#2d3440;">实施计划</b><br>第一阶段完成需求梳理，第二阶段推进开发上线。<br><br>
-          <b style="color:#2d3440;">风险</b><br>暂无明显风险。
-        </div>
-        <div style="position:absolute;right:14px;top:54px;width:33%;display:flex;flex-direction:column;gap:8px;">
-          <div style="background:#fff;border:1px solid #dce2eb;border-left:3px solid #4F8EF7;border-radius:7px;padding:8px;font-size:10px;color:#525e70;box-shadow:0 3px 12px rgba(20,30,45,.08);">效率提升多少？给个可验收的数字。</div>
-          <div style="background:#fff;border:1px solid #dce2eb;border-left:3px solid #FF9500;border-radius:7px;padding:8px;font-size:10px;color:#525e70;box-shadow:0 3px 12px rgba(20,30,45,.08);">谁负责？每个阶段的截止时间是？</div>
-          <div style="background:#fff;border:1px solid #dce2eb;border-left:3px solid #FF6B6B;border-radius:7px;padding:8px;font-size:10px;color:#525e70;box-shadow:0 3px 12px rgba(20,30,45,.08);">“暂无风险”依据是什么～</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:14px;display:flex;gap:10px;align-items:stretch;">
-    <div style="flex:1;background:#141820;border:1px solid #1e2530;border-radius:9px;padding:10px 14px;font-size:12px;color:#8b98b0;"><span style="color:#34C759;font-weight:700;">✓ 链路已验证</span> · 读取文档、生成预览、身份确认、逐条写入</div>
-    <div style="background:rgba(255,149,0,.05);border:1px solid rgba(255,149,0,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:#FF9500;">真实截图到位后直接替换占位区域</div>
-  </div>
-</div>
-
 
 
 <div class="section" id="arch">
   <div class="section-label">架构权限</div>
-  <div class="section-title">三端架构 · 角色与上下文权限设计</div>
+  <div class="section-title">三端架构 · 双层权限设计</div>
 
   <!-- 比例容器：架构 auto / 中间行 auto / 权限 1fr -->
   <div style="flex:1;min-height:0;display:grid;grid-template-rows:auto auto 1fr;gap:0;">
@@ -1429,7 +1338,7 @@ footer {
           使用者：全自动运行，崩溃自动恢复<br>
           载体：本地 Mac，Node.js<br>
           · 全部业务逻辑<br>
-          · 调用 LLM 服务 / 飞书 API
+          · 调用 Claude AI / 飞书 API
         </div>
       </div>
 
@@ -1441,14 +1350,13 @@ footer {
         <span>用户发消息</span><span class="sep">→</span>
         <span>飞书推 WebSocket 事件</span><span class="sep">→</span>
         <span>服务器权限校验 + 任务路由</span><span class="sep">→</span>
-        <span>角色上下文策略</span><span class="sep">→</span>
-        <span>读文档 + LLM 分析</span><span class="sep">→</span>
+        <span>读文档 + Claude 分析</span><span class="sep">→</span>
         <span>写批注 / 发回复</span><span class="sep">→</span>
         <span>用户看到结果</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div style="flex:1;height:1px;background:#1e2530;"></div>
-        <span style="font-size:10px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">平台权限 + 角色权限 + 上下文策略</span>
+        <span style="font-size:10px;font-weight:700;color:#6b7a95;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;">双层权限体系</span>
         <div style="flex:1;height:1px;background:#1e2530;"></div>
       </div>
     </div>
@@ -1486,7 +1394,7 @@ footer {
             <tr>
               <td style="padding:7px 10px;"><span class="role-badge badge-employee">员工</span></td>
               <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">open_id 在白名单中</td>
-              <td style="font-size:12px;padding:7px 10px;">文档预审（老板审阅画像）</td>
+              <td style="font-size:12px;padding:7px 10px;">文档预审 + 通用对话</td>
             </tr>
             <tr>
               <td style="padding:7px 10px;"><span class="role-badge badge-other">其他人</span></td>
@@ -1494,9 +1402,9 @@ footer {
               <td style="font-size:12px;color:#4a5568;padding:7px 10px;">静默忽略，不回复不提示</td>
             </tr>
             <tr>
-              <td style="padding:7px 10px;"><span class="role-badge badge-admin">Admin</span></td>
+              <td style="padding:7px 10px;"><span class="role-badge badge-admin">Admin</span><span class="badge-deferred">暂缓</span></td>
               <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">ADMIN_OPEN_IDS</td>
-              <td style="font-size:12px;color:#6b7a95;padding:7px 10px;">Demo 候选审核，不可发布正式高风险 Soul</td>
+              <td style="font-size:12px;color:#4a5568;padding:7px 10px;">管理配置（第二阶段）</td>
             </tr>
           </tbody>
         </table>
@@ -1504,8 +1412,8 @@ footer {
         <div style="padding:10px 16px;font-size:11px;color:#6b7a95;border-top:1px solid #1e2530;margin-top:auto;">
           <strong style="color:#e2e8f0;">回复语境区分</strong><br>
           老板发消息 → AI 收到"对话者是老板本人，直接简短"<br>
-          员工预审 → 仅注入批准的审阅画像，不加载老板私人 Memory / 原始证据<br>
-          <span style="color:#4a5568;font-size:10px;">同一个 Bot，按角色控制可读取的上下文，而不是只靠提示词约束</span>
+          员工发消息 → AI 收到"对话者是员工，上级对下属沟通风格"<br>
+          <span style="color:#4a5568;font-size:10px;">同一个 Bot，同一套人格，根据发送者动态调整语境</span>
         </div>
       </div>
 
@@ -1571,7 +1479,7 @@ footer {
         </div>
         <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
         <div class="flow-col" style="width:100%;">
-          <div class="flow-node highlight" style="width:100%;text-align:center;">⑥ 调用 LLM 服务</div>
+          <div class="flow-node highlight" style="width:100%;text-align:center;">⑥ 调用 Claude AI</div>
           <div class="flow-desc">注入 Soul + Skill 指令，最多重试3次</div>
         </div>
         <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
@@ -1589,7 +1497,7 @@ footer {
         </div>
         <div class="flow-center-arrow"><div class="v-line"></div><div style="color:#2d3748;font-size:14px;">↓</div></div>
         <div class="flow-col" style="width:100%;">
-          <div class="flow-node green" style="width:100%;text-align:center;">⑨ 调用 LLM 服务</div>
+          <div class="flow-node green" style="width:100%;text-align:center;">⑨ 调用 Claude AI</div>
           <div class="flow-desc">基于老板语境生成回复</div>
         </div>
       </div>
@@ -1689,7 +1597,7 @@ footer {
 
         <!-- B 内容区（row 1） -->
         <div style="padding:16px 18px;display:flex;flex-direction:column;">
-          <div style="font-size:10px;font-weight:700;color:#34C759;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;">B · 三端通信与角色权限验证</div>
+          <div style="font-size:10px;font-weight:700;color:#34C759;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;flex-shrink:0;">B · 三端通信与双层权限验证</div>
 
           <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;flex-shrink:0;">
             <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;">
@@ -1697,12 +1605,12 @@ footer {
               <span style="color:#6b7a95;">飞书客户端 → 飞书开放平台（WebSocket）→ 自建服务器，全链路稳定</span>
             </div>
             <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;">
-              <span style="color:#34C759;font-weight:700;white-space:nowrap;">✅ 上下文隔离</span>
-              <span style="color:#6b7a95;">飞书权限 + 代码角色 + 任务上下文白名单，员工只读审阅画像</span>
+              <span style="color:#34C759;font-weight:700;white-space:nowrap;">✅ 双层权限</span>
+              <span style="color:#6b7a95;">飞书平台应用权限 + 代码层角色判断，两层独立、互不依赖</span>
             </div>
             <div style="background:#0d1018;border:1px solid #1e2530;border-radius:7px;padding:7px 12px;font-size:12px;display:flex;gap:8px;align-items:center;">
               <span style="color:#34C759;font-weight:700;white-space:nowrap;">✅ 服务自愈</span>
-              <span style="color:#6b7a95;">崩溃自动重启与异常兜底已验证；当前 Demo 正进行生产安全加固</span>
+              <span style="color:#6b7a95;">崩溃 3 秒内自动重启，异常兜底通知，可作生产级长驻服务</span>
             </div>
           </div>
 
@@ -1757,7 +1665,7 @@ footer {
 
             <div style="flex:1;background:rgba(168,139,250,0.04);border:1px solid rgba(168,139,250,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
               <div style="font-size:12px;font-weight:700;color:#c4cdd8;margin-bottom:4px;">现阶段结论</div>
-              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">三端通信、角色上下文隔离、候选沉淀与服务自愈已完成代码验证；当前仍是本地 Demo，生产 API 与密钥治理待完成</div>
+              <div style="font-size:12px;color:#6b7a95;line-height:1.55;">三端通信、双层权限、服务自愈已完成验证。当前架构能力天花板已明确：无多步规划、无自动记忆、无多 Agent 并行</div>
             </div>
 
             <div style="flex:1;background:rgba(168,139,250,0.04);border:1px solid rgba(168,139,250,0.12);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-height:0;">
@@ -1801,8 +1709,8 @@ footer {
         <div style="display:flex;gap:6px;align-items:baseline;">
           <span style="font-size:11px;color:#34C759;flex-shrink:0;">·</span>
           <div>
-            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">低成本 Demo</span>
-            <span style="font-size:11px;color:#4a5568;margin-left:4px;">当前可调用本机订阅 CLI，生产环境预留 API</span>
+            <span style="font-size:12px;font-weight:600;color:#c4cdd8;">零 AI 成本</span>
+            <span style="font-size:11px;color:#4a5568;margin-left:4px;">调用本机 Claude Code，不按 Token 计费</span>
           </div>
         </div>
         <div style="display:flex;gap:6px;align-items:baseline;">
@@ -1890,7 +1798,7 @@ footer {
     <!-- 当前方案 -->
     <div style="background:#141820;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
       <div style="padding:11px 16px;border-bottom:1px solid rgba(167,139,250,0.2);flex-shrink:0;background:rgba(167,139,250,0.08);">
-        <span style="font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;">当前方案 · 可切换 LLM Provider</span>
+        <span style="font-size:10px;font-weight:700;color:#a78bfa;letter-spacing:1px;text-transform:uppercase;">当前方案 · Claude Code CLI</span>
       </div>
       <div style="flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
 
@@ -1926,7 +1834,7 @@ footer {
             <span style="font-size:11px;font-weight:700;color:#6b7a95;">模型绑定</span>
           </div>
           <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
-            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">统一 LLM client，Demo 可切换 Codex / Claude / mock，生产待接 API</span>
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">强依赖 Claude，切换模型需重写整个调用层</span>
           </div>
         </div>
 
@@ -1935,7 +1843,7 @@ footer {
             <span style="font-size:11px;font-weight:700;color:#6b7a95;">部署依赖</span>
           </div>
           <div style="flex:1;padding:8px 14px;display:flex;align-items:center;">
-            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">订阅 CLI 试运行仍依赖本地机器；生产 API 化后可容器部署</span>
+            <span style="font-size:12px;color:#8b98b0;line-height:1.5;">必须在安装了 Claude Code 的机器上运行，无法容器化</span>
           </div>
         </div>
 
@@ -2042,7 +1950,6 @@ footer {
 
 </div>
 
-</div><!-- /fp-container -->
 
 
 <script>
@@ -2053,10 +1960,9 @@ footer {
   var slides = [hero].concat(sections);
   var navItems = Array.from(document.querySelectorAll('#top-nav-items .nav-item'));
 
-  navItems.forEach(function(item) {
+  navItems.forEach(function(item, i) {
     item.addEventListener('click', function() {
-      var slideIndex = Number(item.getAttribute('data-idx'));
-      if (slides[slideIndex]) slides[slideIndex].scrollIntoView({ behavior: 'smooth' });
+      if (slides[i]) slides[i].scrollIntoView({ behavior: 'smooth' });
     });
   });
 
@@ -2065,14 +1971,8 @@ footer {
       if (entry.intersectionRatio >= 0.4) {
         var idx = slides.indexOf(entry.target);
         if (idx >= 0) {
-          var navIndex = entry.target.getAttribute && entry.target.getAttribute('data-nav-group') === 'real-demo'
-            ? 6
-            : idx;
           navItems.forEach(function(d) { d.classList.remove('active'); });
-          var activeItem = navItems.find(function(item) {
-            return Number(item.getAttribute('data-idx')) === navIndex;
-          });
-          if (activeItem) activeItem.classList.add('active');
+          if (navItems[idx]) navItems[idx].classList.add('active');
         }
       }
     });
