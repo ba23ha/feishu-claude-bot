@@ -1302,10 +1302,8 @@ footer {
         <span style="font-size:10px;color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:2px 8px;">真实截图</span>
       </div>
       <div data-demo-crop="daily-top" style="position:relative;flex:1;min-height:0;overflow:hidden;border-radius:9px;background:#f7f8fa;border:1px solid #263044;">
-        <img src="assets/demo/daily-report-2026-06-26.png" alt="6月26日老板日报上半部分：昨日动态与风险分级" style="position:absolute;left:6%;top:0;width:88%;height:auto;display:block;box-shadow:0 8px 24px rgba(0,0,0,.18);">
-        <div data-image-annotation="risk" style="position:absolute;left:7%;top:18%;width:86%;height:72%;border:2px solid rgba(255,107,107,.9);border-radius:9px;background:rgba(255,107,107,.025);box-shadow:0 0 0 1px rgba(255,255,255,.28) inset;pointer-events:none;">
-          <span style="position:absolute;left:12px;top:-14px;background:#b93d45;border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 11px;color:#fff;font-size:11px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.28);">① 先看风险 · 风险分级：2 红 / 2 黄 / 1 绿</span>
-        </div>
+        <img src="assets/demo/daily-report-2026-06-26.png" alt="6月26日老板日报上半部分：昨日动态与风险分级" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;">
+        <div style="position:absolute;right:10px;top:10px;background:rgba(10,13,18,.9);border:1px solid rgba(255,107,107,.55);border-radius:8px;padding:7px 10px;color:#fff;font-size:11px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.28);">风险分级：2 红 / 2 黄 / 1 绿</div>
       </div>
     </div>
 
@@ -1315,15 +1313,16 @@ footer {
         <span style="font-size:10px;color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:2px 8px;">真实截图</span>
       </div>
       <div data-demo-crop="daily-bottom" style="position:relative;flex:1;min-height:0;overflow:hidden;border-radius:9px;background:#f7f8fa;border:1px solid #263044;">
-        <img src="assets/demo/daily-report-2026-06-26.png" alt="6月26日老板日报下半部分：特别关注与今日行动" style="position:absolute;left:6%;bottom:0;width:88%;height:auto;display:block;box-shadow:0 8px 24px rgba(0,0,0,.18);">
-        <div data-image-annotation="focus" style="position:absolute;left:7%;top:13%;width:86%;height:27%;border:2px solid rgba(79,142,247,.9);border-radius:9px;background:rgba(79,142,247,.025);box-shadow:0 0 0 1px rgba(255,255,255,.3) inset;pointer-events:none;">
-          <span style="position:absolute;right:12px;top:-14px;background:#356fc8;border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 11px;color:#fff;font-size:11px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.28);">② 再做收敛 · 从群聊信息收敛到老板待决策事项</span>
-        </div>
-        <div data-image-annotation="action" style="position:absolute;left:7%;top:46%;width:86%;height:47%;border:2px solid rgba(52,199,89,.9);border-radius:9px;background:rgba(52,199,89,.02);box-shadow:0 0 0 1px rgba(255,255,255,.3) inset;pointer-events:none;">
-          <span style="position:absolute;left:12px;top:-14px;background:#238c47;border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 11px;color:#fff;font-size:11px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.28);">③ 落到行动 · 今天必做 / 今天内跟进</span>
-        </div>
+        <img src="assets/demo/daily-report-2026-06-26.png" alt="6月26日老板日报下半部分：特别关注与今日行动" style="position:absolute;left:0;bottom:0;width:100%;height:auto;display:block;">
+        <div style="position:absolute;right:10px;top:10px;background:rgba(10,13,18,.9);border:1px solid rgba(79,142,247,.55);border-radius:8px;padding:7px 10px;color:#fff;font-size:11px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.28);">从群聊信息收敛到老板待决策事项</div>
       </div>
     </div>
+  </div>
+
+  <div style="margin-top:11px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+    <div style="background:rgba(255,107,107,.05);border:1px solid rgba(255,107,107,.2);border-radius:9px;padding:9px 12px;"><div style="font-size:10px;color:#FF6B6B;font-weight:700;margin-bottom:3px;">先看风险</div><div style="font-size:11px;color:#8b98b0;line-height:1.45;">红黄绿让老板一眼识别决策缺口、时间风险和正常进展。</div></div>
+    <div style="background:rgba(79,142,247,.05);border:1px solid rgba(79,142,247,.2);border-radius:9px;padding:9px 12px;"><div style="font-size:10px;color:#4F8EF7;font-weight:700;margin-bottom:3px;">再做收敛</div><div style="font-size:11px;color:#8b98b0;line-height:1.45;">从 15 个活跃群中提炼特别关注，不把聊天流水账直接上报。</div></div>
+    <div style="background:rgba(52,199,89,.05);border:1px solid rgba(52,199,89,.2);border-radius:9px;padding:9px 12px;"><div style="font-size:10px;color:#34C759;font-weight:700;margin-bottom:3px;">落到行动</div><div style="font-size:11px;color:#8b98b0;line-height:1.45;">输出继续转成“今天必做 / 今天内跟进”，可直接执行。</div></div>
   </div>
 
   <div style="margin-top:9px;display:flex;gap:18px;align-items:center;font-size:11px;color:#6b7a95;">
