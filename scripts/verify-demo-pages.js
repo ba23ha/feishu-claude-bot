@@ -21,6 +21,8 @@ const checks = [
   ['确认按钮框选', 'data-inline-annotation="confirm"'],
   ['文档正文锚点框选', 'data-inline-annotation="doc-anchor"'],
   ['评论栏结果框选', 'data-inline-annotation="comment-panel"'],
+  ['批注预览完整显示', 'data-fit-mode="contain-preview"'],
+  ['批注结果完整显示', 'data-fit-mode="contain-comments"'],
   ['文档批注摘要', '识别 5 个值得批注的问题'],
   ['风险分级批注', '① 先看风险 · 2红 / 2黄 / 1绿'],
   ['决策收敛批注', '>② 再做收敛</span>'],
@@ -58,6 +60,14 @@ if (html.includes('data-annotation-label=')) {
 
 if (html.includes('示例占位')) {
   console.error('FAIL: 第二个 Demo 仍包含示例占位');
+  process.exit(1);
+}
+
+const inlineReviewStart = html.indexOf('id="demo-inline-review"');
+const inlineReviewEnd = html.indexOf('id="arch"', inlineReviewStart);
+const inlineReviewHtml = html.slice(inlineReviewStart, inlineReviewEnd);
+if (inlineReviewHtml.includes('object-fit:cover')) {
+  console.error('FAIL: 第二个 Demo 截图仍使用 cover 裁切');
   process.exit(1);
 }
 
