@@ -1334,42 +1334,46 @@ footer {
 <div class="section" id="demo-inline-review" data-nav-group="real-demo">
   <div class="section-label">真实测试 · Demo 02</div>
   <div class="section-title">review_inline · 人工确认后写入飞书批注</div>
-  <p style="color:#8b98b0;font-size:13px;margin-bottom:14px;">真实飞书 Demo 截图 · 对已批注文档先生成 5 条预览，Boss 回复“确认”后再写入文档，避免 AI 越权改内容。</p>
+  <p style="color:#8b98b0;font-size:13px;margin-bottom:14px;">完整保留“发起—预览—确认—写入”闭环，避免 AI 未经授权直接修改文档。</p>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0;">
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:13px;display:flex;flex-direction:column;min-height:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
-        <span style="font-size:12px;font-weight:700;color:#4F8EF7;">① 对话侧 · 先预览再确认</span>
-        <span style="font-size:10px;color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:2px 8px;">真实截图</span>
-      </div>
-      <div data-demo-crop="inline-review-preview" style="position:relative;flex:1;min-height:0;overflow:hidden;border-radius:9px;background:#f7f8fa;border:1px solid #263044;">
-        <img src="assets/demo/inline-review-preview-2026-06-29.jpg" alt="飞书产品助理生成文档批注预览，并等待用户确认" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:left center;display:block;">
-        <div data-inline-annotation="preview" style="position:absolute;left:6.4%;top:28%;width:69%;height:64%;border:2px solid rgba(79,142,247,.78);border-radius:11px;background:rgba(79,142,247,.006);box-shadow:0 0 0 1px rgba(255,255,255,.32) inset;pointer-events:none;"></div>
-        <span style="position:absolute;right:25%;top:18%;background:rgba(53,111,200,.94);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 10px;color:#fff;font-size:10px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.20);">识别 5 个批注点</span>
-        <div data-inline-annotation="confirm" style="position:absolute;left:6.2%;bottom:1.8%;width:6.7%;height:7.1%;border:2px solid rgba(52,199,89,.9);border-radius:8px;background:rgba(52,199,89,.025);box-shadow:0 0 0 1px rgba(255,255,255,.4) inset;pointer-events:none;"></div>
-        <span style="position:absolute;left:14.5%;bottom:4.5%;background:rgba(35,140,71,.94);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 10px;color:#fff;font-size:10px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.20);">确认后写入</span>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:11px;padding:12px;"><div style="font-size:10px;color:#4F8EF7;font-weight:700;margin-bottom:7px;">01 · 发送文档</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">员工发送飞书文档链接<br><span style="color:#c4cdd8;">“自动批注”</span></div></div>
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:11px;padding:12px;"><div style="font-size:10px;color:#4F8EF7;font-weight:700;margin-bottom:7px;">02 · 生成预览</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">Bot 读取并识别关键问题<br><span style="color:#c4cdd8;">最多 5 条</span></div></div>
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:11px;padding:12px;"><div style="font-size:10px;color:#FF9500;font-weight:700;margin-bottom:7px;">03 · 人工确认</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">仅最初发起人可回复<br><span style="color:#c4cdd8;">“确认”或“取消”</span></div></div>
+    <div style="background:#141820;border:1px solid rgba(52,199,89,.35);border-radius:11px;padding:12px;"><div style="font-size:10px;color:#34C759;font-weight:700;margin-bottom:7px;">04 · 写入文档</div><div style="font-size:11px;color:#8b98b0;line-height:1.5;">逐条写入对应段落<br><span style="color:#34C759;">✓ 返回成功状态</span></div></div>
+  </div>
+
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:.78fr 1.45fr;gap:16px;">
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:16px;display:flex;flex-direction:column;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="font-size:12px;font-weight:700;color:#4F8EF7;">确认对话</span><span style="font-size:10px;color:#FF9500;">示例占位</span></div>
+      <div style="background:#0d1018;border-radius:10px;padding:14px;flex:1;font-size:11px;line-height:1.6;color:#8b98b0;">
+        <div style="background:#1b2230;border-radius:8px;padding:10px;margin-bottom:10px;color:#c4cdd8;">已识别 5 个关键问题：目标不清、负责人缺失、时间节点不完整……</div>
+        <div style="background:rgba(79,142,247,.14);border-radius:8px;padding:10px;margin:0 0 10px 35px;color:#9fc1ff;">确认</div>
+        <div style="background:#1b2230;border-radius:8px;padding:10px;color:#34C759;">✅ 已写入 5 条文档批注</div>
       </div>
     </div>
 
-    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:13px;display:flex;flex-direction:column;min-height:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
-        <span style="font-size:12px;font-weight:700;color:#34C759;">② 文档侧 · 批注已落到原文</span>
-        <span style="font-size:10px;color:#34C759;border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:2px 8px;">真实截图</span>
-      </div>
-      <div data-demo-crop="inline-review-comments" style="position:relative;flex:1;min-height:0;overflow:hidden;border-radius:9px;background:#f7f8fa;border:1px solid #263044;">
-        <img src="assets/demo/inline-review-comments-2026-06-29.jpg" alt="飞书云文档中已写入评论批注，右侧评论栏展示批注结果" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;">
-        <div data-inline-annotation="doc-anchor" style="position:absolute;left:23%;top:35%;width:33%;height:22%;border:2px solid rgba(255,149,0,.82);border-radius:10px;background:rgba(255,149,0,.006);box-shadow:0 0 0 1px rgba(255,255,255,.32) inset;pointer-events:none;"></div>
-        <div data-inline-annotation="comment-panel" style="position:absolute;right:1.3%;top:11%;width:19%;height:82%;border:2px solid rgba(52,199,89,.82);border-radius:10px;background:rgba(52,199,89,.006);box-shadow:0 0 0 1px rgba(255,255,255,.32) inset;pointer-events:none;"></div>
-        <span style="position:absolute;left:24%;top:29%;background:rgba(196,124,16,.94);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 10px;color:#fff;font-size:10px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.18);">正文锚点</span>
-        <span style="position:absolute;right:4%;top:5%;background:rgba(35,140,71,.94);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:5px 10px;color:#fff;font-size:10px;font-weight:800;box-shadow:0 5px 14px rgba(0,0,0,.18);">评论栏 5 条</span>
+    <div style="background:#141820;border:1px solid #1e2530;border-radius:14px;padding:16px;display:flex;flex-direction:column;min-height:0;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;"><span style="font-size:12px;font-weight:700;color:#34C759;">飞书文档批注结果</span><span style="font-size:10px;color:#FF9500;">示例占位</span></div>
+      <div style="background:#f7f8fa;border-radius:10px;padding:17px 20px;color:#202632;flex:1;position:relative;overflow:hidden;">
+        <div style="font-size:15px;font-weight:800;margin-bottom:12px;">Q3 项目推进方案</div>
+        <div style="width:61%;font-size:11px;color:#657083;line-height:1.8;">
+          <b style="color:#2d3440;">项目目标</b><br>通过流程升级提升团队协作效率。<br><br>
+          <b style="color:#2d3440;">实施计划</b><br>第一阶段完成需求梳理，第二阶段推进开发上线。<br><br>
+          <b style="color:#2d3440;">风险</b><br>暂无明显风险。
+        </div>
+        <div style="position:absolute;right:14px;top:54px;width:33%;display:flex;flex-direction:column;gap:8px;">
+          <div style="background:#fff;border:1px solid #dce2eb;border-left:3px solid #4F8EF7;border-radius:7px;padding:8px;font-size:10px;color:#525e70;box-shadow:0 3px 12px rgba(20,30,45,.08);">效率提升多少？给个可验收的数字。</div>
+          <div style="background:#fff;border:1px solid #dce2eb;border-left:3px solid #FF9500;border-radius:7px;padding:8px;font-size:10px;color:#525e70;box-shadow:0 3px 12px rgba(20,30,45,.08);">谁负责？每个阶段的截止时间是？</div>
+          <div style="background:#fff;border:1px solid #dce2eb;border-left:3px solid #FF6B6B;border-radius:7px;padding:8px;font-size:10px;color:#525e70;box-shadow:0 3px 12px rgba(20,30,45,.08);">“暂无风险”依据是什么～</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div style="margin-top:10px;display:flex;gap:18px;align-items:center;font-size:11px;color:#6b7a95;">
-    <span><b style="color:#34C759;">✓ 真实链路</b> · 云文档读取 → 批注预览 → 人工确认 → 写入文档</span>
-    <span><b style="color:#e2e8f0;">识别 5 个值得批注的问题</b> · 聚焦数据、决策、Owner、资源、Deadline</span>
-    <span><b style="color:#FF9500;">安全边界</b> · 未确认不写入</span>
+  <div style="margin-top:14px;display:flex;gap:10px;align-items:stretch;">
+    <div style="flex:1;background:#141820;border:1px solid #1e2530;border-radius:9px;padding:10px 14px;font-size:12px;color:#8b98b0;"><span style="color:#34C759;font-weight:700;">✓ 链路已验证</span> · 读取文档、生成预览、身份确认、逐条写入</div>
+    <div style="background:rgba(255,149,0,.05);border:1px solid rgba(255,149,0,.2);border-radius:9px;padding:10px 14px;font-size:12px;color:#FF9500;">真实截图到位后直接替换占位区域</div>
   </div>
 </div>
 
